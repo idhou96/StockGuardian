@@ -1,3 +1,11 @@
+# 1.0.0 (2025-09-15)
+
+
+### Features
+
+* ajout d'un module de test ([0a6277f](https://github.com/idhou96/StockGuardian/commit/0a6277fb02100eb1cad8edc7c6c132e69937484e))
+* ajout d'un module de test ([be4a92c](https://github.com/idhou96/StockGuardian/commit/be4a92cc866fa980d29e1b04f4262c58d7f12845))
+
 # Release Notes
 
 ## [Unreleased](https://github.com/laravel/laravel/compare/v12.3.1...12.x)
