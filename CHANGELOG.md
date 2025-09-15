@@ -1,3 +1,9 @@
+# [2.3.0](https://github.com/idhou96/StockGuardian/compare/v2.2.1...v2.3.0) (2025-09-15)
+
+### Features
+
+* ajout d’une fonctionnalité ([a5ac7dc](https://github.com/idhou96/StockGuardian/commit/a5ac7dc66b5fb4783dce2997e1950f3306a22a6c))
+
 ## [2.2.1](https://github.com/idhou96/StockGuardian/compare/v2.2.0...v2.2.1) (2025-09-15)
 
 ### Bug Fixes
@@ -58,7 +64,15 @@
 
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/laravel/compare/v2.2.1...main)
+## [Unreleased](https://github.com/laravel/laravel/compare/v2.3.0...main)
+
+## [v2.3.0](https://github.com/laravel/laravel/compare/v2.2.1...v2.3.0) - 2025-09-15
+
+### [2.3.0](https://github.com/idhou96/StockGuardian/compare/v2.2.1...v2.3.0) (2025-09-15)
+
+##### Features
+
+* ajout d’une fonctionnalité ([a5ac7dc](https://github.com/idhou96/StockGuardian/commit/a5ac7dc66b5fb4783dce2997e1950f3306a22a6c))
 
 ## [v2.2.1](https://github.com/laravel/laravel/compare/v2.2.0...v2.2.1) - 2025-09-15
 
