@@ -49,70 +49,37 @@ require __DIR__.'/auth.php';
 |--------------------------------------------------------------------------
 */
 
-// Route principale avec redirection intelligente par rôle
+// Route principale avec redirection automatique par middleware
 Route::get('/', function () {
     if (!auth()->check()) {
         return redirect('/login');
     }
     
-    $user = auth()->user();
-    
-    // Redirection selon le rôle de l'utilisateur
-    if ($user->hasRole('administrateur')) {
-        return redirect('/dashboard/admin');
-    } elseif ($user->hasRole('responsable_commercial')) {
-        return redirect('/dashboard/manager');
-    } elseif ($user->hasRole(['vendeur', 'caissiere'])) {
-        return redirect('/dashboard/sales');
-    } elseif ($user->hasRole('magasinier')) {
-        return redirect('/dashboard/stock');
-    } elseif ($user->hasRole('responsable_achats')) {
-        return redirect('/dashboard/purchases');
-    } elseif ($user->hasRole('comptable')) {
-        return redirect('/dashboard/accounting');
-    } else {
-        // Pour les rôles invité/stagiaire ou autres
-        return redirect('/dashboard/general');
-    }
+    // Le middleware 'role.redirect' s'occupera de la redirection automatique
+    return redirect('/dashboard');
 })->name('home');
 
 Route::get('/help/public', [HelpController::class, 'public'])->name('help.public');
 
 /*
 |--------------------------------------------------------------------------
-| Routes Protégées - Middleware Auth & Verified
+| Routes Protégées - Middleware Auth Extended avec Redirection Automatique
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth.extended'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | DASHBOARD - Tableaux de Bord par Rôle avec Redirection Automatique
+    | DASHBOARD - Redirection Automatique par Rôle via Middleware
     |--------------------------------------------------------------------------
     */
     
-    // Route dashboard principale avec redirection automatique par rôle
+    // Route dashboard principale - Le middleware 'role.redirect' gère la redirection automatique
     Route::get('/dashboard', function () {
-        $user = auth()->user();
-        
-        // Redirection selon le rôle principal de l'utilisateur
-        if ($user->hasRole('administrateur')) {
-            return redirect()->route('dashboard.admin');
-        } elseif ($user->hasRole('responsable_commercial')) {
-            return redirect()->route('dashboard.manager');
-        } elseif ($user->hasRole(['vendeur', 'caissiere'])) {
-            return redirect()->route('dashboard.sales');
-        } elseif ($user->hasRole('magasinier')) {
-            return redirect()->route('dashboard.stock');
-        } elseif ($user->hasRole('responsable_achats')) {
-            return redirect()->route('dashboard.purchases');
-        } elseif ($user->hasRole('comptable')) {
-            return redirect()->route('dashboard.accounting');
-        } else {
-            // Pour les rôles invité/stagiaire
-            return redirect()->route('dashboard.general');
-        }
+        // Cette route ne devrait jamais être atteinte directement
+        // Le middleware RedirectBasedOnRole redirige automatiquement vers le bon dashboard
+        return redirect()->route('dashboard.general');
     })->name('dashboard');
     
     // API pour actualisation temps réel des KPIs
@@ -121,7 +88,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/dashboard/charts', [DashboardController::class, 'charts'])
         ->name('dashboard.charts');
     
-    // Dashboards spécialisés par rôle
+    // Dashboards spécialisés par rôle avec middleware appropriés
     Route::get('/dashboard/admin', [DashboardController::class, 'admin'])
         ->middleware('role:administrateur')
         ->name('dashboard.admin');
@@ -135,15 +102,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('dashboard.sales');
     
     Route::get('/dashboard/stock', [DashboardController::class, 'stock'])
-        ->middleware('role:magasinier')
+        ->middleware('role:magasinier|administrateur')
         ->name('dashboard.stock');
         
     Route::get('/dashboard/purchases', [DashboardController::class, 'purchases'])
-        ->middleware('role:responsable_achats')
+        ->middleware('role:responsable_achats|administrateur')
         ->name('dashboard.purchases');
     
     Route::get('/dashboard/accounting', [DashboardController::class, 'accounting'])
-        ->middleware('role:comptable')
+        ->middleware('role:comptable|administrateur')
         ->name('dashboard.accounting');
         
     Route::get('/dashboard/general', [DashboardController::class, 'general'])
@@ -197,185 +164,115 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | GESTION DES VENTES & POS
+    | GESTION DES VENTES & POS - Groupe Sales
     |--------------------------------------------------------------------------
     */
     
-    Route::resource('sales', SaleController::class)
-        ->middleware('permission:sales.view|sales.create|sales.edit|sales.delete');
-    
-    Route::prefix('sales')->name('sales.')->group(function () {
-        // Impression et actions
-        Route::get('/{sale}/print', [SaleController::class, 'print'])
-            ->middleware('permission:sales.view')
-            ->name('print');
-        Route::get('/{sale}/pdf', [SaleController::class, 'pdf'])
-            ->middleware('permission:sales.view')
-            ->name('pdf');
-        Route::post('/{sale}/cancel', [SaleController::class, 'cancel'])
-            ->middleware('permission:sales.delete')
-            ->name('cancel');
-        Route::post('/{sale}/refund', [SaleController::class, 'refund'])
-            ->middleware('permission:sales.edit')
-            ->name('refund');
+    Route::middleware(['sales'])->group(function () {
+        Route::resource('sales', SaleController::class);
         
-        // Rapports ventes
-        Route::get('/report/daily', [SaleController::class, 'dailyReport'])
-            ->middleware('permission:reports.view')
-            ->name('report.daily');
-        Route::get('/report/monthly', [SaleController::class, 'monthlyReport'])
-            ->middleware('permission:reports.view')
-            ->name('report.monthly');
-        Route::get('/export/excel', [SaleController::class, 'exportExcel'])
-            ->middleware('permission:reports.export')
-            ->name('export.excel');
+        Route::prefix('sales')->name('sales.')->group(function () {
+            // Impression et actions
+            Route::get('/{sale}/print', [SaleController::class, 'print'])->name('print');
+            Route::get('/{sale}/pdf', [SaleController::class, 'pdf'])->name('pdf');
+            Route::post('/{sale}/cancel', [SaleController::class, 'cancel'])->name('cancel');
+            Route::post('/{sale}/refund', [SaleController::class, 'refund'])->name('refund');
+            
+            // Rapports ventes
+            Route::get('/report/daily', [SaleController::class, 'dailyReport'])->name('report.daily');
+            Route::get('/report/monthly', [SaleController::class, 'monthlyReport'])->name('report.monthly');
+            Route::get('/export/excel', [SaleController::class, 'exportExcel'])->name('export.excel');
+        });
     });
 
     /*
     |--------------------------------------------------------------------------
-    | GESTION DU STOCK & INVENTAIRES
+    | GESTION DU STOCK & INVENTAIRES - Groupe Stock
     |--------------------------------------------------------------------------
     */
     
-    // Mouvements de stock
-    Route::prefix('stock-movements')->name('stock-movements.')->group(function () {
-        Route::get('/', [StockMovementController::class, 'index'])
-            ->middleware('permission:inventory.view')
-            ->name('index');
-        
-        // Entrées de stock
-        Route::get('/create-entry', [StockMovementController::class, 'createEntry'])
-            ->middleware('permission:inventory.create')
-            ->name('create-entry');
-        Route::post('/store-entry', [StockMovementController::class, 'storeEntry'])
-            ->middleware('permission:inventory.create')
-            ->name('store-entry');
-        
-        // Sorties de stock
-        Route::get('/create-exit', [StockMovementController::class, 'createExit'])
-            ->middleware('permission:inventory.create')
-            ->name('create-exit');
-        Route::post('/store-exit', [StockMovementController::class, 'storeExit'])
-            ->middleware('permission:inventory.create')
-            ->name('store-exit');
-        
-        // Affichage et actions
-        Route::get('/{movement}', [StockMovementController::class, 'show'])
-            ->middleware('permission:inventory.view')
-            ->name('show');
-        Route::post('/{movement}/cancel', [StockMovementController::class, 'cancel'])
-            ->middleware('permission:inventory.edit')
-            ->name('cancel');
-        
-        // Rapports
-        Route::get('/export/report', [StockMovementController::class, 'exportReport'])
-            ->middleware('permission:reports.export')
-            ->name('export.report');
-    });
+    Route::middleware(['stock'])->group(function () {
+        // Mouvements de stock
+        Route::prefix('stock-movements')->name('stock-movements.')->group(function () {
+            Route::get('/', [StockMovementController::class, 'index'])->name('index');
+            
+            // Entrées de stock
+            Route::get('/create-entry', [StockMovementController::class, 'createEntry'])->name('create-entry');
+            Route::post('/store-entry', [StockMovementController::class, 'storeEntry'])->name('store-entry');
+            
+            // Sorties de stock
+            Route::get('/create-exit', [StockMovementController::class, 'createExit'])->name('create-exit');
+            Route::post('/store-exit', [StockMovementController::class, 'storeExit'])->name('store-exit');
+            
+            // Affichage et actions
+            Route::get('/{movement}', [StockMovementController::class, 'show'])->name('show');
+            Route::post('/{movement}/cancel', [StockMovementController::class, 'cancel'])->name('cancel');
+            
+            // Rapports
+            Route::get('/export/report', [StockMovementController::class, 'exportReport'])->name('export.report');
+        });
 
-    // Inventaires
-    Route::resource('inventories', InventoryController::class)
-        ->middleware('permission:inventory.view|inventory.create|inventory.edit|inventory.delete');
-    
-    Route::prefix('inventories')->name('inventories.')->group(function () {
-        Route::post('/{inventory}/start', [InventoryController::class, 'start'])
-            ->middleware('permission:inventory.edit')
-            ->name('start');
-        Route::post('/{inventory}/validate', [InventoryController::class, 'validate'])
-            ->middleware('permission:inventory.edit')
-            ->name('validate');
-        Route::post('/{inventory}/apply', [InventoryController::class, 'apply'])
-            ->middleware('permission:inventory.edit')
-            ->name('apply');
-        Route::get('/{inventory}/print', [InventoryController::class, 'print'])
-            ->middleware('permission:reports.view')
-            ->name('print');
-        Route::get('/{inventory}/export', [InventoryController::class, 'export'])
-            ->middleware('permission:reports.export')
-            ->name('export');
-    });
-
-    // Régularisations de stock
-    Route::resource('stock-regularizations', StockRegularizationController::class)
-        ->middleware('permission:inventory.view|inventory.create|inventory.edit|inventory.delete');
+        // Inventaires
+        Route::resource('inventories', InventoryController::class);
         
-    Route::prefix('stock-regularizations')->name('stock-regularizations.')->group(function () {
-        Route::post('/{regularization}/validate', [StockRegularizationController::class, 'validate'])
-            ->middleware('permission:inventory.edit')
-            ->name('validate');
-        Route::post('/{regularization}/cancel', [StockRegularizationController::class, 'cancel'])
-            ->middleware('permission:inventory.delete')
-            ->name('cancel');
-    });
+        Route::prefix('inventories')->name('inventories.')->group(function () {
+            Route::post('/{inventory}/start', [InventoryController::class, 'start'])->name('start');
+            Route::post('/{inventory}/validate', [InventoryController::class, 'validate'])->name('validate');
+            Route::post('/{inventory}/apply', [InventoryController::class, 'apply'])->name('apply');
+            Route::get('/{inventory}/print', [InventoryController::class, 'print'])->name('print');
+            Route::get('/{inventory}/export', [InventoryController::class, 'export'])->name('export');
+        });
 
-    // Entrepôts/Dépôts
-    Route::resource('warehouses', WarehouseController::class)
-        ->middleware('permission:inventory.view|inventory.create|inventory.edit|inventory.delete');
-    
-    Route::prefix('warehouses')->name('warehouses.')->group(function () {
-        Route::get('/{warehouse}/stock', [WarehouseController::class, 'stock'])
-            ->middleware('permission:inventory.view')
-            ->name('stock');
-        Route::get('/{warehouse}/movements', [WarehouseController::class, 'movements'])
-            ->middleware('permission:inventory.view')
-            ->name('movements');
-        Route::post('/{warehouse}/transfer', [WarehouseController::class, 'transfer'])
-            ->middleware('permission:inventory.create')
-            ->name('transfer');
+        // Régularisations de stock
+        Route::resource('stock-regularizations', StockRegularizationController::class);
+            
+        Route::prefix('stock-regularizations')->name('stock-regularizations.')->group(function () {
+            Route::post('/{regularization}/validate', [StockRegularizationController::class, 'validate'])->name('validate');
+            Route::post('/{regularization}/cancel', [StockRegularizationController::class, 'cancel'])->name('cancel');
+        });
+
+        // Entrepôts/Dépôts
+        Route::resource('warehouses', WarehouseController::class);
+        
+        Route::prefix('warehouses')->name('warehouses.')->group(function () {
+            Route::get('/{warehouse}/stock', [WarehouseController::class, 'stock'])->name('stock');
+            Route::get('/{warehouse}/movements', [WarehouseController::class, 'movements'])->name('movements');
+            Route::post('/{warehouse}/transfer', [WarehouseController::class, 'transfer'])->name('transfer');
+        });
     });
 
     /*
     |--------------------------------------------------------------------------
-    | GESTION DES ACHATS & FOURNISSEURS
+    | GESTION DES ACHATS & FOURNISSEURS - Groupe Purchases
     |--------------------------------------------------------------------------
     */
     
-    Route::resource('purchase-orders', PurchaseOrderController::class)
-        ->middleware('permission:purchases.view|purchases.create|purchases.edit|purchases.delete');
-    
-    Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
-        Route::post('/{order}/send', [PurchaseOrderController::class, 'send'])
-            ->middleware('permission:purchases.edit')
-            ->name('send');
-        Route::get('/{order}/receive', [PurchaseOrderController::class, 'receiveForm'])
-            ->middleware('permission:purchases.edit')
-            ->name('receive-form');
-        Route::post('/{order}/receive', [PurchaseOrderController::class, 'receive'])
-            ->middleware('permission:purchases.edit')
-            ->name('receive');
-        Route::get('/{order}/print', [PurchaseOrderController::class, 'print'])
-            ->middleware('permission:reports.view')
-            ->name('print');
-        Route::post('/{order}/cancel', [PurchaseOrderController::class, 'cancel'])
-            ->middleware('permission:purchases.delete')
-            ->name('cancel');
-    });
+    Route::middleware(['purchases'])->group(function () {
+        Route::resource('purchase-orders', PurchaseOrderController::class);
+        
+        Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
+            Route::post('/{order}/send', [PurchaseOrderController::class, 'send'])->name('send');
+            Route::get('/{order}/receive', [PurchaseOrderController::class, 'receiveForm'])->name('receive-form');
+            Route::post('/{order}/receive', [PurchaseOrderController::class, 'receive'])->name('receive');
+            Route::get('/{order}/print', [PurchaseOrderController::class, 'print'])->name('print');
+            Route::post('/{order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('cancel');
+        });
 
-    // Bons de livraison
-    Route::resource('delivery-notes', DeliveryNoteController::class)
-        ->middleware('permission:purchases.view|purchases.create|purchases.edit|purchases.delete');
+        // Bons de livraison
+        Route::resource('delivery-notes', DeliveryNoteController::class);
 
-    // Bons de retour
-    Route::resource('return-notes', ReturnNoteController::class)
-        ->middleware('permission:purchases.view|purchases.create|purchases.edit|purchases.delete');
+        // Bons de retour
+        Route::resource('return-notes', ReturnNoteController::class);
 
-    // Fournisseurs
-    Route::resource('suppliers', SupplierController::class)
-        ->middleware('permission:suppliers.view|suppliers.create|suppliers.edit|suppliers.delete');
-    
-    Route::prefix('suppliers')->name('suppliers.')->group(function () {
-        Route::get('/export', [SupplierController::class, 'export'])
-            ->middleware('permission:reports.export')
-            ->name('export');
-        Route::post('/import', [SupplierController::class, 'import'])
-            ->middleware('permission:suppliers.create')
-            ->name('import');
-        Route::get('/{supplier}/purchase-history', [SupplierController::class, 'purchaseHistory'])
-            ->middleware('permission:purchases.view')
-            ->name('purchase-history');
-        Route::get('/{supplier}/account-statement', [SupplierController::class, 'accountStatement'])
-            ->middleware('permission:purchases.view')
-            ->name('account-statement');
+        // Fournisseurs
+        Route::resource('suppliers', SupplierController::class);
+        
+        Route::prefix('suppliers')->name('suppliers.')->group(function () {
+            Route::get('/export', [SupplierController::class, 'export'])->name('export');
+            Route::post('/import', [SupplierController::class, 'import'])->name('import');
+            Route::get('/{supplier}/purchase-history', [SupplierController::class, 'purchaseHistory'])->name('purchase-history');
+            Route::get('/{supplier}/account-statement', [SupplierController::class, 'accountStatement'])->name('account-statement');
+        });
     });
 
     /*
@@ -469,136 +366,110 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | ADMINISTRATION UTILISATEURS
+    | ADMINISTRATION UTILISATEURS - Groupe Admin
     |--------------------------------------------------------------------------
     */
     
-    Route::resource('users', UserController::class)
-        ->middleware('permission:users.view|users.create|users.edit|users.delete');
-    
-    Route::prefix('users')->name('users.')->group(function () {
-        Route::post('/{user}/toggle-status', [UserController::class, 'toggleStatus'])
-            ->middleware('permission:users.edit')
-            ->name('toggle-status');
-        Route::post('/{user}/reset-password', [UserController::class, 'resetPassword'])
-            ->middleware('permission:users.edit')
-            ->name('reset-password');
-    });
-
-    Route::resource('roles', RoleController::class)
-        ->middleware('permission:users.view|users.create|users.edit|users.delete');
-
-    Route::prefix('permissions')->name('permissions.')->middleware('permission:users.edit')->group(function () {
-        Route::get('/', [PermissionController::class, 'index'])->name('index');
-        Route::post('/assign', [PermissionController::class, 'assign'])->name('assign');
-        Route::post('/revoke', [PermissionController::class, 'revoke'])->name('revoke');
-        Route::post('/toggle', [PermissionController::class, 'toggle'])->name('toggle');
-        Route::post('/toggle-module', [PermissionController::class, 'toggleModule'])->name('toggle-module');
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | PARAMÈTRES & CONFIGURATION SYSTÈME
-    |--------------------------------------------------------------------------
-    */
-    
-    Route::prefix('settings')->name('settings.')->middleware('permission:settings.view')->group(function () {
-        Route::get('/', [SettingController::class, 'index'])->name('index');
-        Route::post('/', [SettingController::class, 'store'])
-            ->middleware('permission:settings.edit')
-            ->name('store');
-        Route::get('/export', [SettingController::class, 'export'])
-            ->middleware('permission:settings.edit')
-            ->name('export');
-        Route::post('/import', [SettingController::class, 'import'])
-            ->middleware('permission:settings.edit')
-            ->name('import');
-        Route::post('/reset', [SettingController::class, 'reset'])
-            ->middleware('permission:settings.edit')
-            ->name('reset');
-    });
-
-    // Paramètres système avancés
-    Route::prefix('system-settings')->name('system-settings.')->middleware('permission:settings.view')->group(function () {
-        Route::get('/', [SystemSettingController::class, 'index'])->name('index');
-        Route::post('/', [SystemSettingController::class, 'store'])
-            ->middleware('permission:settings.edit')
-            ->name('store');
-        Route::post('/optimize-system', [SystemSettingController::class, 'optimizeSystem'])
-            ->middleware('permission:settings.edit')
-            ->name('optimize-system');
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | ACTIVITÉ & LOGS
-    |--------------------------------------------------------------------------
-    */
-    
-    Route::prefix('activity')->name('activity.')->group(function () {
-        Route::get('/', [ActivityController::class, 'index'])
-            ->middleware('permission:settings.view')
-            ->name('index');
-        Route::get('/logs', [ActivityController::class, 'logs'])
-            ->middleware('permission:settings.view')
-            ->name('logs');
-        Route::get('/user/{user}', [ActivityController::class, 'userActivity'])
-            ->middleware('permission:users.view')
-            ->name('user');
-        Route::delete('/clear/{days?}', [ActivityController::class, 'clear'])
-            ->middleware('permission:settings.edit')
-            ->name('clear');
-    });
-    
-    Route::prefix('logs')->name('logs.')->middleware('permission:settings.view')->group(function () {
-        Route::get('/', [LogController::class, 'index'])->name('index');
-        Route::get('/export', [LogController::class, 'export'])
-            ->middleware('permission:settings.edit')
-            ->name('export');
-        Route::delete('/clear-old', [LogController::class, 'clearOld'])
-            ->middleware('permission:settings.edit')
-            ->name('clear-old');
-        Route::get('/download/{file}', [LogController::class, 'download'])
-            ->middleware('permission:settings.edit')
-            ->name('download');
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | MAINTENANCE & SYSTÈME
-    |--------------------------------------------------------------------------
-    */
-    
-    Route::prefix('maintenance')->name('maintenance.')->middleware('permission:settings.edit')->group(function () {
-        Route::get('/', [MaintenanceController::class, 'index'])->name('index');
+    Route::middleware(['admin'])->group(function () {
+        Route::resource('users', UserController::class);
         
-        // Optimisation système
-        Route::post('/optimize-database', [MaintenanceController::class, 'optimizeDatabase'])->name('optimize-database');
-        Route::post('/clear-cache', [MaintenanceController::class, 'clearCache'])->name('clear-cache');
-        Route::post('/clear-logs', [MaintenanceController::class, 'clearLogs'])->name('clear-logs');
-        Route::post('/clear-sessions', [MaintenanceController::class, 'clearSessions'])->name('clear-sessions');
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::post('/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle-status');
+            Route::post('/{user}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
+        });
+
+        Route::resource('roles', RoleController::class);
+
+        Route::prefix('permissions')->name('permissions.')->group(function () {
+            Route::get('/', [PermissionController::class, 'index'])->name('index');
+            Route::post('/assign', [PermissionController::class, 'assign'])->name('assign');
+            Route::post('/revoke', [PermissionController::class, 'revoke'])->name('revoke');
+            Route::post('/toggle', [PermissionController::class, 'toggle'])->name('toggle');
+            Route::post('/toggle-module', [PermissionController::class, 'toggleModule'])->name('toggle-module');
+        });
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | PARAMÈTRES & CONFIGURATION SYSTÈME - Groupe Admin
+    |--------------------------------------------------------------------------
+    */
+    
+    Route::middleware(['admin'])->group(function () {
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', [SettingController::class, 'index'])->name('index');
+            Route::post('/', [SettingController::class, 'store'])->name('store');
+            Route::get('/export', [SettingController::class, 'export'])->name('export');
+            Route::post('/import', [SettingController::class, 'import'])->name('import');
+            Route::post('/reset', [SettingController::class, 'reset'])->name('reset');
+        });
+
+        // Paramètres système avancés
+        Route::prefix('system-settings')->name('system-settings.')->group(function () {
+            Route::get('/', [SystemSettingController::class, 'index'])->name('index');
+            Route::post('/', [SystemSettingController::class, 'store'])->name('store');
+            Route::post('/optimize-system', [SystemSettingController::class, 'optimizeSystem'])->name('optimize-system');
+        });
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACTIVITÉ & LOGS - Groupe Admin
+    |--------------------------------------------------------------------------
+    */
+    
+    Route::middleware(['admin'])->group(function () {
+        Route::prefix('activity')->name('activity.')->group(function () {
+            Route::get('/', [ActivityController::class, 'index'])->name('index');
+            Route::get('/logs', [ActivityController::class, 'logs'])->name('logs');
+            Route::get('/user/{user}', [ActivityController::class, 'userActivity'])->name('user');
+            Route::delete('/clear/{days?}', [ActivityController::class, 'clear'])->name('clear');
+        });
         
-        // Mode maintenance
-        Route::post('/enable-maintenance', [MaintenanceController::class, 'enableMaintenance'])->name('enable-maintenance');
-        Route::post('/disable-maintenance', [MaintenanceController::class, 'disableMaintenance'])->name('disable-maintenance');
+        Route::prefix('logs')->name('logs.')->group(function () {
+            Route::get('/', [LogController::class, 'index'])->name('index');
+            Route::get('/export', [LogController::class, 'export'])->name('export');
+            Route::delete('/clear-old', [LogController::class, 'clearOld'])->name('clear-old');
+            Route::get('/download/{file}', [LogController::class, 'download'])->name('download');
+        });
     });
 
-    Route::prefix('backups')->name('backups.')->middleware('permission:settings.edit')->group(function () {
-        Route::get('/', [BackupController::class, 'index'])->name('index');
-        Route::post('/create', [BackupController::class, 'create'])->name('create');
-        Route::post('/create-scheduled', [BackupController::class, 'createScheduled'])->name('create-scheduled');
-        Route::get('/{backup}/download', [BackupController::class, 'download'])->name('download');
-        Route::post('/{backup}/restore', [BackupController::class, 'restore'])->name('restore');
-        Route::delete('/{backup}', [BackupController::class, 'destroy'])->name('destroy');
-    });
+    /*
+    |--------------------------------------------------------------------------
+    | MAINTENANCE & SYSTÈME - Groupe Admin
+    |--------------------------------------------------------------------------
+    */
+    
+    Route::middleware(['admin'])->group(function () {
+        Route::prefix('maintenance')->name('maintenance.')->group(function () {
+            Route::get('/', [MaintenanceController::class, 'index'])->name('index');
+            
+            // Optimisation système
+            Route::post('/optimize-database', [MaintenanceController::class, 'optimizeDatabase'])->name('optimize-database');
+            Route::post('/clear-cache', [MaintenanceController::class, 'clearCache'])->name('clear-cache');
+            Route::post('/clear-logs', [MaintenanceController::class, 'clearLogs'])->name('clear-logs');
+            Route::post('/clear-sessions', [MaintenanceController::class, 'clearSessions'])->name('clear-sessions');
+            
+            // Mode maintenance
+            Route::post('/enable-maintenance', [MaintenanceController::class, 'enableMaintenance'])->name('enable-maintenance');
+            Route::post('/disable-maintenance', [MaintenanceController::class, 'disableMaintenance'])->name('disable-maintenance');
+        });
 
-    Route::prefix('performance')->name('performance.')->middleware('permission:settings.view')->group(function () {
-        Route::get('/monitor', [PerformanceController::class, 'monitor'])->name('monitor');
-        Route::get('/system-info', [PerformanceController::class, 'systemInfo'])->name('system-info');
-        Route::get('/database-stats', [PerformanceController::class, 'databaseStats'])->name('database-stats');
-        Route::post('/optimize', [PerformanceController::class, 'optimize'])
-            ->middleware('permission:settings.edit')
-            ->name('optimize');
+        Route::prefix('backups')->name('backups.')->group(function () {
+            Route::get('/', [BackupController::class, 'index'])->name('index');
+            Route::post('/create', [BackupController::class, 'create'])->name('create');
+            Route::post('/create-scheduled', [BackupController::class, 'createScheduled'])->name('create-scheduled');
+            Route::get('/{backup}/download', [BackupController::class, 'download'])->name('download');
+            Route::post('/{backup}/restore', [BackupController::class, 'restore'])->name('restore');
+            Route::delete('/{backup}', [BackupController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('performance')->name('performance.')->group(function () {
+            Route::get('/monitor', [PerformanceController::class, 'monitor'])->name('monitor');
+            Route::get('/system-info', [PerformanceController::class, 'systemInfo'])->name('system-info');
+            Route::get('/database-stats', [PerformanceController::class, 'databaseStats'])->name('database-stats');
+            Route::post('/optimize', [PerformanceController::class, 'optimize'])->name('optimize');
+        });
     });
 
     /*
@@ -649,18 +520,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | IMPORT/EXPORT DE DONNÉES
+    | IMPORT/EXPORT DE DONNÉES - Groupe Admin
     |--------------------------------------------------------------------------
     */
     
-    Route::prefix('import-export')->name('import-export.')->middleware('permission:settings.edit')->group(function () {
-        Route::get('/', [ImportExportController::class, 'index'])->name('index');
-        Route::get('/templates', [ImportExportController::class, 'templates'])->name('templates');
-        Route::get('/template/{type}', [ImportExportController::class, 'downloadTemplate'])->name('template');
-        Route::post('/import/{type}', [ImportExportController::class, 'import'])->name('import');
-        Route::get('/export/{type}', [ImportExportController::class, 'export'])->name('export');
-        Route::get('/export-all', [ImportExportController::class, 'exportAll'])->name('export-all');
-        Route::post('/import-all', [ImportExportController::class, 'importAll'])->name('import-all');
+    Route::middleware(['admin'])->group(function () {
+        Route::prefix('import-export')->name('import-export.')->group(function () {
+            Route::get('/', [ImportExportController::class, 'index'])->name('index');
+            Route::get('/templates', [ImportExportController::class, 'templates'])->name('templates');
+            Route::get('/template/{type}', [ImportExportController::class, 'downloadTemplate'])->name('template');
+            Route::post('/import/{type}', [ImportExportController::class, 'import'])->name('import');
+            Route::get('/export/{type}', [ImportExportController::class, 'export'])->name('export');
+            Route::get('/export-all', [ImportExportController::class, 'exportAll'])->name('export-all');
+            Route::post('/import-all', [ImportExportController::class, 'importAll'])->name('import-all');
+        });
     });
 
     /*
@@ -691,7 +564,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| ROUTES API (v1)
+| ROUTES API (v1) - Middleware Auth Sanctum avec Groupes
 |--------------------------------------------------------------------------
 */
 
@@ -707,22 +580,30 @@ Route::prefix('api/v1')->middleware(['auth:sanctum'])->name('api.')->group(funct
     Route::get('products/barcode/{barcode}', [ProductController::class, 'apiFindByBarcode'])->name('products.barcode');
     
     // Sales API
-    Route::apiResource('sales', SaleController::class);
-    Route::get('sales/today/summary', [SaleController::class, 'apiTodaySummary'])->name('sales.today-summary');
+    Route::middleware(['sales'])->group(function () {
+        Route::apiResource('sales', SaleController::class);
+        Route::get('sales/today/summary', [SaleController::class, 'apiTodaySummary'])->name('sales.today-summary');
+    });
     
     // Stock API
-    Route::get('stock/alerts', [StockMovementController::class, 'apiAlerts'])->name('stock.alerts');
-    Route::get('stock/movements/recent', [StockMovementController::class, 'apiRecentMovements'])->name('stock.recent-movements');
+    Route::middleware(['stock'])->group(function () {
+        Route::get('stock/alerts', [StockMovementController::class, 'apiAlerts'])->name('stock.alerts');
+        Route::get('stock/movements/recent', [StockMovementController::class, 'apiRecentMovements'])->name('stock.recent-movements');
+    });
     
     // Customers API
     Route::apiResource('customers', CustomerController::class);
     Route::get('customers/search/{term}', [CustomerController::class, 'apiSearch'])->name('customers.search');
     
     // Suppliers API
-    Route::apiResource('suppliers', SupplierController::class);
+    Route::middleware(['purchases'])->group(function () {
+        Route::apiResource('suppliers', SupplierController::class);
+    });
     
     // Reports API
-    Route::get('reports/dashboard-data', [ReportController::class, 'apiDashboardData'])->name('reports.dashboard-data');
+    Route::get('reports/dashboard-data', [ReportController::class, 'apiDashboardData'])
+        ->middleware('permission:reports.view')
+        ->name('reports.dashboard-data');
     
 });
 
@@ -777,6 +658,21 @@ if (app()->environment(['local', 'testing'])) {
         Route::get('/phpinfo', function () {
             return phpinfo();
         })->name('phpinfo');
+        
+        // Route de test pour les redirections par rôle
+        Route::get('/test-roles', function () {
+            $user = auth()->user();
+            return response()->json([
+                'user' => $user->only(['id', 'name', 'email', 'role']),
+                'redirect_url' => \App\Providers\RouteServiceProvider::redirectTo(),
+                'dashboard_route' => \App\Providers\RouteServiceProvider::getDashboardRouteName(),
+                'roles_check' => [
+                    'administrateur' => $user->hasRole('administrateur'),
+                    'vendeur' => $user->hasRole('vendeur'),
+                    'magasinier' => $user->hasRole('magasinier'),
+                ]
+            ]);
+        })->name('test-roles');
         
     });
 }
