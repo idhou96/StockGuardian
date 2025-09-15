@@ -1,3 +1,15 @@
+# [3.0.0](https://github.com/idhou96/StockGuardian/compare/v2.3.0...v3.0.0) (2025-09-15)
+
+
+### Features
+
+* test breaking change ([53e6b4f](https://github.com/idhou96/StockGuardian/commit/53e6b4f3ec89c198c15bb2e1761e22ce3b797ecb))
+
+
+### BREAKING CHANGES
+
+* Test 5
+
 # [2.3.0](https://github.com/idhou96/StockGuardian/compare/v2.2.1...v2.3.0) (2025-09-15)
 
 ### Features
