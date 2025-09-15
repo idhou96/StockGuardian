@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/idhou96/StockGuardian/compare/v1.0.1...v1.1.0) (2025-09-15)
+
+
+### Features
+
+* ajout d'une nouvelle fonctionnalité de test ([bae6578](https://github.com/idhou96/StockGuardian/commit/bae6578fccb710729815142a19eeb39810d187e7))
+
 ## [1.0.1](https://github.com/idhou96/StockGuardian/compare/v1.0.0...v1.0.1) (2025-09-15)
 
 ### Bug Fixes
