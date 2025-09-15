@@ -1,10 +1,8 @@
 # [2.0.0](https://github.com/idhou96/StockGuardian/compare/v1.1.0...v2.0.0) (2025-09-15)
 
-
 ### Features
 
 * refonte complète du module de test ([9f51189](https://github.com/idhou96/StockGuardian/commit/9f511898c43221bed2388ce79fa126ee47d2f58e))
-
 
 ### BREAKING CHANGES
 
@@ -31,7 +29,19 @@
 
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/laravel/compare/v1.1.0...main)
+## [Unreleased](https://github.com/laravel/laravel/compare/v2.0.0...main)
+
+## [v2.0.0](https://github.com/laravel/laravel/compare/v1.1.0...v2.0.0) - 2025-09-15
+
+### [2.0.0](https://github.com/idhou96/StockGuardian/compare/v1.1.0...v2.0.0) (2025-09-15)
+
+##### Features
+
+* refonte complète du module de test ([9f51189](https://github.com/idhou96/StockGuardian/commit/9f511898c43221bed2388ce79fa126ee47d2f58e))
+
+##### BREAKING CHANGES
+
+* nouvelle API incompatible avec l'ancienne
 
 ## [v1.1.0](https://github.com/laravel/laravel/compare/v1.0.1...v1.1.0) - 2025-09-15
 
