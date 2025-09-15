@@ -768,11 +768,6 @@ if (app()->environment(['local', 'testing'])) {
             \Artisan::call('db:seed', ['--class' => 'TestDataSeeder']);
             return response()->json(['message' => 'Test data seeded!']);
         })->name('seed-test-data');
-
-        Route::get('/seed-test-seeder', function () {
-            \Artisan::call('db:seed', ['--class' => 'TestDataSeeder']);
-            return response()->json(['message' => 'Test data seeded!']);
-        })->name('seed-test-seeder');
         
         Route::get('/generate-fake-sales', function () {
             // Génération de fausses ventes pour les tests
