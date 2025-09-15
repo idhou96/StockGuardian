@@ -1,5 +1,5 @@
 <?php
-// test 4 
+// test breaking change
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
     BaseController,
