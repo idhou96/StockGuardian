@@ -1,5 +1,6 @@
 <?php
 //test
+//test 2
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
     BaseController,
