@@ -49,8 +49,31 @@ require __DIR__.'/auth.php';
 |--------------------------------------------------------------------------
 */
 
+// Route principale avec redirection intelligente par rôle
 Route::get('/', function () {
-    return auth()->check() ? redirect('/dashboard') : redirect('/login');
+    if (!auth()->check()) {
+        return redirect('/login');
+    }
+    
+    $user = auth()->user();
+    
+    // Redirection selon le rôle de l'utilisateur
+    if ($user->hasRole('administrateur')) {
+        return redirect('/dashboard/admin');
+    } elseif ($user->hasRole('responsable_commercial')) {
+        return redirect('/dashboard/manager');
+    } elseif ($user->hasRole(['vendeur', 'caissiere'])) {
+        return redirect('/dashboard/sales');
+    } elseif ($user->hasRole('magasinier')) {
+        return redirect('/dashboard/stock');
+    } elseif ($user->hasRole('responsable_achats')) {
+        return redirect('/dashboard/purchases');
+    } elseif ($user->hasRole('comptable')) {
+        return redirect('/dashboard/accounting');
+    } else {
+        // Pour les rôles invité/stagiaire ou autres
+        return redirect('/dashboard/general');
+    }
 })->name('home');
 
 Route::get('/help/public', [HelpController::class, 'public'])->name('help.public');
@@ -65,11 +88,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | DASHBOARD - Tableaux de Bord par Rôle
+    | DASHBOARD - Tableaux de Bord par Rôle avec Redirection Automatique
     |--------------------------------------------------------------------------
     */
     
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Route dashboard principale avec redirection automatique par rôle
+    Route::get('/dashboard', function () {
+        $user = auth()->user();
+        
+        // Redirection selon le rôle principal de l'utilisateur
+        if ($user->hasRole('administrateur')) {
+            return redirect()->route('dashboard.admin');
+        } elseif ($user->hasRole('responsable_commercial')) {
+            return redirect()->route('dashboard.manager');
+        } elseif ($user->hasRole(['vendeur', 'caissiere'])) {
+            return redirect()->route('dashboard.sales');
+        } elseif ($user->hasRole('magasinier')) {
+            return redirect()->route('dashboard.stock');
+        } elseif ($user->hasRole('responsable_achats')) {
+            return redirect()->route('dashboard.purchases');
+        } elseif ($user->hasRole('comptable')) {
+            return redirect()->route('dashboard.accounting');
+        } else {
+            // Pour les rôles invité/stagiaire
+            return redirect()->route('dashboard.general');
+        }
+    })->name('dashboard');
     
     // API pour actualisation temps réel des KPIs
     Route::get('/api/dashboard/kpis', [DashboardController::class, 'kpis'])
@@ -79,24 +123,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Dashboards spécialisés par rôle
     Route::get('/dashboard/admin', [DashboardController::class, 'admin'])
-        ->middleware('role:admin')
+        ->middleware('role:administrateur')
         ->name('dashboard.admin');
     
     Route::get('/dashboard/manager', [DashboardController::class, 'manager'])
-        ->middleware('role:manager')
+        ->middleware('role:responsable_commercial')
         ->name('dashboard.manager');
     
     Route::get('/dashboard/sales', [DashboardController::class, 'sales'])
-        ->middleware('role:seller|manager')
+        ->middleware('role:vendeur|caissiere|responsable_commercial')
         ->name('dashboard.sales');
     
     Route::get('/dashboard/stock', [DashboardController::class, 'stock'])
-        ->middleware('role:stock_manager')
+        ->middleware('role:magasinier')
         ->name('dashboard.stock');
+        
+    Route::get('/dashboard/purchases', [DashboardController::class, 'purchases'])
+        ->middleware('role:responsable_achats')
+        ->name('dashboard.purchases');
     
     Route::get('/dashboard/accounting', [DashboardController::class, 'accounting'])
-        ->middleware('role:accountant')
+        ->middleware('role:comptable')
         ->name('dashboard.accounting');
+        
+    Route::get('/dashboard/general', [DashboardController::class, 'general'])
+        ->middleware('role:invite|stagiaire')
+        ->name('dashboard.general');
 
     /*
     |--------------------------------------------------------------------------
@@ -243,18 +295,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('export');
     });
 
-    // Régularisations de stock selon votre RegularizationController
+    // Régularisations de stock
+    Route::resource('stock-regularizations', StockRegularizationController::class)
+        ->middleware('permission:inventory.view|inventory.create|inventory.edit|inventory.delete');
+        
     Route::prefix('stock-regularizations')->name('stock-regularizations.')->group(function () {
-        Route::post('/{regularization}/validate', [RegularizationController::class, 'validate'])
+        Route::post('/{regularization}/validate', [StockRegularizationController::class, 'validate'])
             ->middleware('permission:inventory.edit')
             ->name('validate');
-        Route::post('/{regularization}/cancel', [RegularizationController::class, 'cancel'])
+        Route::post('/{regularization}/cancel', [StockRegularizationController::class, 'cancel'])
             ->middleware('permission:inventory.delete')
             ->name('cancel');
     });
-
-    Route::resource('stock-regularizations', RegularizationController::class)
-        ->middleware('permission:inventory.view|inventory.create|inventory.edit|inventory.delete');
 
     // Entrepôts/Dépôts
     Route::resource('warehouses', WarehouseController::class)
