@@ -7,7 +7,7 @@
     [
     "@semantic-release/exec",
     {
-        "prepareCmd": "node ./set-composer-version.cjs ${nextRelease.version}"
+      "prepareCmd": "node ./StockGuardian/set-composer-version.cjs ${nextRelease.version}"
     }
     ],
     [
