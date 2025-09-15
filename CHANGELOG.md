@@ -1,3 +1,15 @@
+## [2.2.1](https://github.com/idhou96/StockGuardian/compare/v2.2.0...v2.2.1) (2025-09-15)
+
+
+### Bug Fixes
+
+* modifs releaserc ([c8fa6dc](https://github.com/idhou96/StockGuardian/commit/c8fa6dcd81f210e231e1249c3835fcc8efb6aa18))
+* Test 4 ([a9a4146](https://github.com/idhou96/StockGuardian/commit/a9a4146bab78be678339d80d244fb8e2bd22722b))
+* Test 4 ([80bf4cb](https://github.com/idhou96/StockGuardian/commit/80bf4cb8b84a7fa4b577e0fa3fa1137132cedbe2))
+* Test 4 ([d838e6e](https://github.com/idhou96/StockGuardian/commit/d838e6e16cba8ac77e29884f17d835ef66f0d2b5))
+* Test 4 ([cf24014](https://github.com/idhou96/StockGuardian/commit/cf240142be49880cdd3a6f682a11d1e26820785d))
+* Test 4 ([9af4e8f](https://github.com/idhou96/StockGuardian/commit/9af4e8fb1208b25d5a1e5b04679bd2d12d1ad643))
+
 # [2.2.0](https://github.com/idhou96/StockGuardian/compare/v2.1.0...v2.2.0) (2025-09-15)
 
 ### Features
