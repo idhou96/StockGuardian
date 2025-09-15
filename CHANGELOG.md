@@ -1,3 +1,9 @@
+# [2.2.0](https://github.com/idhou96/StockGuardian/compare/v2.1.0...v2.2.0) (2025-09-15)
+
+### Features
+
+* test 3 -m "BREAKING CHANGE: TEST 3" ([62cebbb](https://github.com/idhou96/StockGuardian/commit/62cebbbcc274b73ff6c4a4cd9e8d387f54ec3f95))
+
 # [2.1.0](https://github.com/idhou96/StockGuardian/compare/v2.0.1...v2.1.0) (2025-09-15)
 
 ### Features
@@ -41,7 +47,15 @@
 
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/laravel/compare/v2.1.0...main)
+## [Unreleased](https://github.com/laravel/laravel/compare/v2.2.0...main)
+
+## [v2.2.0](https://github.com/laravel/laravel/compare/v2.1.0...v2.2.0) - 2025-09-15
+
+### [2.2.0](https://github.com/idhou96/StockGuardian/compare/v2.1.0...v2.2.0) (2025-09-15)
+
+##### Features
+
+* test 3 -m "BREAKING CHANGE: TEST 3" ([62cebbb](https://github.com/idhou96/StockGuardian/commit/62cebbbcc274b73ff6c4a4cd9e8d387f54ec3f95))
 
 ## [v2.1.0](https://github.com/laravel/laravel/compare/v2.0.1...v2.1.0) - 2025-09-15
 
