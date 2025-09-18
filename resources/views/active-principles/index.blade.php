@@ -1,9 +1,3 @@
-
-// ===================================
-// 3. VUE INDEX PRINCIPES ACTIFS
-// ===================================
-// File: resources/views/active-principles/index.blade.php
-
 @extends('layouts.app')
 
 @section('title', 'Principes Actifs')

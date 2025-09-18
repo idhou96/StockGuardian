@@ -2,8 +2,6 @@
 
 return [
     App\Providers\AppServiceProvider::class,
-<<<<<<< HEAD
+    App\Providers\RouteServiceProvider::class, // AJOUTEZ CETTE LIGNE
     App\Providers\VoltServiceProvider::class,
-=======
->>>>>>> 2022c95 (essaie commit)
 ];

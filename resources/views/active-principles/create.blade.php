@@ -1,9 +1,3 @@
-
-// ===================================
-// 4. VUE CREATE PRINCIPE ACTIF
-// ===================================
-// File: resources/views/active-principles/create.blade.php
-
 @extends('layouts.app')
 
 @section('title', 'Créer un principe actif')

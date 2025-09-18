@@ -25,20 +25,135 @@ class DashboardController extends BaseController
             return $this->unauthorizedResponse('Accès au tableau de bord non autorisé');
         }
 
-        // Redirection automatique selon le rôle
-        $role = $user->role;
+        // Redirection automatique selon le rôle - CORRIGÉ pour correspondre aux routes
+        $role = $user->role ?? 'invite';
 
         return match ($role) {
             'administrateur' => redirect()->route('dashboard.admin'),
-            'responsable_commercial' => redirect()->route('dashboard.commercial'),
-            'vendeur', 'caissiere' => redirect()->route('dashboard.vendeur'),
-            'magasinier' => redirect()->route('dashboard.magasinier'),
-            'responsable_achats' => redirect()->route('dashboard.achats'),
-            'comptable' => redirect()->route('dashboard.comptable'),
-            'invite', 'stagiaire' => redirect()->route('dashboard.invite'),
+            'responsable_commercial' => redirect()->route('dashboard.manager'), // CORRIGÉ
+            'vendeur', 'caissiere' => redirect()->route('dashboard.sales'), // CORRIGÉ
+            'magasinier' => redirect()->route('dashboard.stock'), // CORRIGÉ
+            'responsable_achats' => redirect()->route('dashboard.purchases'), // CORRIGÉ
+            'comptable' => redirect()->route('dashboard.accounting'), // CORRIGÉ
+            'invite', 'stagiaire' => redirect()->route('dashboard.general'), // CORRIGÉ
             default => $this->generalDashboard()
         };
     }
+
+    // =============================================================================
+    // MÉTHODES POUR CORRESPONDRE AUX ROUTES (admin, manager, sales, etc.)
+    // =============================================================================
+
+    public function admin()
+    {
+        $user = auth()->user();
+        $dashboardData = $this->getDashboardData($user);
+        $dashboardData['dashboard_type'] = 'admin';
+        
+        $this->logActivity('view', null, [], [], 'Consultation du tableau de bord administrateur');
+        return view('dashboard.admin', compact('dashboardData'));
+    }
+
+    public function manager()
+    {
+        $user = auth()->user();
+        $dashboardData = $this->getDashboardData($user);
+        $dashboardData['dashboard_type'] = 'manager';
+        
+        $this->logActivity('view', null, [], [], 'Consultation du tableau de bord commercial');
+        return view('dashboard.manager', compact('dashboardData'));
+    }
+
+    public function sales()
+    {
+        $user = auth()->user();
+        $dashboardData = $this->getDashboardData($user);
+        $dashboardData['dashboard_type'] = 'sales';
+        
+        $this->logActivity('view', null, [], [], 'Consultation du tableau de bord ventes');
+        return view('dashboard.sales', compact('dashboardData'));
+    }
+
+    public function stock()
+    {
+        $user = auth()->user();
+        $dashboardData = $this->getDashboardData($user);
+        $dashboardData['dashboard_type'] = 'stock';
+        
+        $this->logActivity('view', null, [], [], 'Consultation du tableau de bord stock');
+        return view('dashboard.stock', compact('dashboardData'));
+    }
+
+    public function purchases()
+    {
+        $user = auth()->user();
+        $dashboardData = $this->getDashboardData($user);
+        $dashboardData['dashboard_type'] = 'purchases';
+        
+        $this->logActivity('view', null, [], [], 'Consultation du tableau de bord achats');
+        return view('dashboard.purchases', compact('dashboardData'));
+    }
+
+    public function accounting()
+    {
+        $user = auth()->user();
+        $dashboardData = $this->getDashboardData($user);
+        $dashboardData['dashboard_type'] = 'accounting';
+        
+        $this->logActivity('view', null, [], [], 'Consultation du tableau de bord comptabilité');
+        return view('dashboard.accounting', compact('dashboardData'));
+    }
+
+    public function general()
+    {
+        $user = auth()->user();
+        $dashboardData = $this->getDashboardData($user);
+        $dashboardData['dashboard_type'] = 'general';
+        
+        $this->logActivity('view', null, [], [], 'Consultation du tableau de bord général');
+        return view('dashboard.general', compact('dashboardData'));
+    }
+
+    // =============================================================================
+    // APIs POUR DONNÉES DYNAMIQUES
+    // =============================================================================
+
+    public function kpis()
+    {
+        $user = auth()->user();
+        $today = Carbon::today();
+        $thisMonth = Carbon::now()->startOfMonth();
+        
+        try {
+            return response()->json([
+                'daily_sales' => $this->safeModelCall(fn() => Sale::whereDate('sale_date', $today)->sum('total_ttc'), 0),
+                'monthly_sales' => $this->safeModelCall(fn() => Sale::where('sale_date', '>=', $thisMonth)->sum('total_ttc'), 0),
+                'products_in_stock' => $this->safeModelCall(fn() => Product::where('current_stock', '>', 0)->count(), 0),
+                'low_stock_alerts' => $this->safeModelCall(fn() => Product::whereColumn('current_stock', '<=', 'minimum_stock')->count(), 0),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'daily_sales' => 0,
+                'monthly_sales' => 0,
+                'products_in_stock' => 0,
+                'low_stock_alerts' => 0,
+            ]);
+        }
+    }
+
+    public function charts()
+    {
+        $user = auth()->user();
+        $role = $user->role ?? 'invite';
+        
+        $charts = $this->getChartsData($role, $user);
+        
+        return response()->json($charts);
+    }
+
+    // =============================================================================
+    // VOTRE LOGIQUE MÉTIER ORIGINALE (avec protection contre les modèles manquants)
+    // =============================================================================
 
     protected function canViewDashboard($user): bool
     {
@@ -47,7 +162,7 @@ class DashboardController extends BaseController
 
     protected function getDashboardData($user): array
     {
-        $role = $user->role;
+        $role = $user->role ?? 'invite';
         $today = Carbon::today();
         $thisMonth = Carbon::now()->startOfMonth();
 
@@ -70,7 +185,7 @@ class DashboardController extends BaseController
                 $cards = [
                     [
                         'title' => 'Ventes du jour',
-                        'value' => number_format(Sale::whereDate('sale_date', $today)->sum('total_ttc'), 0, ',', ' '),
+                        'value' => $this->safeFormat($this->safeModelCall(fn() => Sale::whereDate('sale_date', $today)->sum('total_ttc'), 0)),
                         'unit' => 'FCFA',
                         'icon' => 'trending-up',
                         'color' => 'green',
@@ -78,7 +193,7 @@ class DashboardController extends BaseController
                     ],
                     [
                         'title' => 'Ventes du mois',
-                        'value' => number_format(Sale::where('sale_date', '>=', $thisMonth)->sum('total_ttc'), 0, ',', ' '),
+                        'value' => $this->safeFormat($this->safeModelCall(fn() => Sale::where('sale_date', '>=', $thisMonth)->sum('total_ttc'), 0)),
                         'unit' => 'FCFA',
                         'icon' => 'bar-chart',
                         'color' => 'blue',
@@ -86,15 +201,15 @@ class DashboardController extends BaseController
                     ],
                     [
                         'title' => 'Produits en stock',
-                        'value' => Product::inStock()->count(),
+                        'value' => $this->safeModelCall(fn() => Product::where('current_stock', '>', 0)->count(), 0),
                         'unit' => 'produits',
                         'icon' => 'package',
                         'color' => 'purple',
                         'change' => null
                     ],
                     [
-                        'title' => 'Alerts stock',
-                        'value' => Product::lowStock()->count(),
+                        'title' => 'Alertes stock',
+                        'value' => $this->safeModelCall(fn() => Product::whereColumn('current_stock', '<=', 'minimum_stock')->count(), 0),
                         'unit' => 'produits',
                         'icon' => 'alert-triangle',
                         'color' => 'red',
@@ -108,21 +223,21 @@ class DashboardController extends BaseController
                 $cards = [
                     [
                         'title' => 'Mes ventes du jour',
-                        'value' => number_format(Sale::where('cashier_id', auth()->id())->whereDate('sale_date', $today)->sum('total_ttc'), 0, ',', ' '),
+                        'value' => $this->safeFormat($this->safeModelCall(fn() => Sale::where('cashier_id', auth()->id())->whereDate('sale_date', $today)->sum('total_ttc'), 0)),
                         'unit' => 'FCFA',
                         'icon' => 'dollar-sign',
                         'color' => 'green'
                     ],
                     [
                         'title' => 'Clients actifs',
-                        'value' => Customer::active()->count(),
+                        'value' => $this->safeModelCall(fn() => Customer::where('is_active', true)->count(), 0),
                         'unit' => 'clients',
                         'icon' => 'users',
                         'color' => 'blue'
                     ],
                     [
                         'title' => 'Factures impayées',
-                        'value' => Invoice::unpaid()->count(),
+                        'value' => $this->safeModelCall(fn() => Invoice::where('status', 'unpaid')->count(), 0),
                         'unit' => 'factures',
                         'icon' => 'file-text',
                         'color' => 'orange'
@@ -134,21 +249,21 @@ class DashboardController extends BaseController
                 $cards = [
                     [
                         'title' => 'Mouvements du jour',
-                        'value' => StockMovement::whereDate('movement_date', $today)->count(),
+                        'value' => $this->safeModelCall(fn() => StockMovement::whereDate('movement_date', $today)->count(), 0),
                         'unit' => 'mouvements',
                         'icon' => 'activity',
                         'color' => 'blue'
                     ],
                     [
                         'title' => 'Ruptures de stock',
-                        'value' => StockOutage::active()->count(),
+                        'value' => $this->safeModelCall(fn() => StockOutage::where('status', 'active')->count(), 0),
                         'unit' => 'produits',
                         'icon' => 'alert-circle',
                         'color' => 'red'
                     ],
                     [
                         'title' => 'Produits expirés',
-                        'value' => Product::expired()->count(),
+                        'value' => $this->safeModelCall(fn() => Product::where('expiry_date', '<', Carbon::today())->count(), 0),
                         'unit' => 'produits',
                         'icon' => 'calendar-x',
                         'color' => 'orange'
@@ -160,21 +275,21 @@ class DashboardController extends BaseController
                 $cards = [
                     [
                         'title' => 'Commandes en cours',
-                        'value' => PurchaseOrder::pending()->count(),
+                        'value' => $this->safeModelCall(fn() => PurchaseOrder::where('status', 'pending')->count(), 0),
                         'unit' => 'commandes',
                         'icon' => 'shopping-cart',
                         'color' => 'blue'
                     ],
                     [
                         'title' => 'Fournisseurs actifs',
-                        'value' => Supplier::active()->count(),
+                        'value' => $this->safeModelCall(fn() => Supplier::where('is_active', true)->count(), 0),
                         'unit' => 'fournisseurs',
                         'icon' => 'truck',
                         'color' => 'green'
                     ],
                     [
                         'title' => 'Réceptions en attente',
-                        'value' => PurchaseOrder::where('status', 'confirme')->count(),
+                        'value' => $this->safeModelCall(fn() => PurchaseOrder::where('status', 'confirme')->count(), 0),
                         'unit' => 'livraisons',
                         'icon' => 'inbox',
                         'color' => 'orange'
@@ -186,21 +301,21 @@ class DashboardController extends BaseController
                 $cards = [
                     [
                         'title' => 'CA du mois',
-                        'value' => number_format(Sale::where('sale_date', '>=', $thisMonth)->sum('total_ttc'), 0, ',', ' '),
+                        'value' => $this->safeFormat($this->safeModelCall(fn() => Sale::where('sale_date', '>=', $thisMonth)->sum('total_ttc'), 0)),
                         'unit' => 'FCFA',
                         'icon' => 'dollar-sign',
                         'color' => 'green'
                     ],
                     [
                         'title' => 'Factures impayées',
-                        'value' => number_format(Invoice::unpaid()->sum('amount_due'), 0, ',', ' '),
+                        'value' => $this->safeFormat($this->safeModelCall(fn() => Invoice::where('status', 'unpaid')->sum('amount_due'), 0)),
                         'unit' => 'FCFA',
                         'icon' => 'file-minus',
                         'color' => 'red'
                     ],
                     [
                         'title' => 'Paiements du jour',
-                        'value' => number_format(\App\Models\Payment::whereDate('payment_date', $today)->sum('amount'), 0, ',', ' '),
+                        'value' => $this->safeFormat($this->safeModelCall(fn() => \App\Models\Payment::whereDate('payment_date', $today)->sum('amount'), 0)),
                         'unit' => 'FCFA',
                         'icon' => 'credit-card',
                         'color' => 'blue'
@@ -212,14 +327,14 @@ class DashboardController extends BaseController
                 $cards = [
                     [
                         'title' => 'Mes ventes du jour',
-                        'value' => number_format(Sale::where('cashier_id', auth()->id())->whereDate('sale_date', $today)->sum('total_ttc'), 0, ',', ' '),
+                        'value' => $this->safeFormat($this->safeModelCall(fn() => Sale::where('cashier_id', auth()->id())->whereDate('sale_date', $today)->sum('total_ttc'), 0)),
                         'unit' => 'FCFA',
                         'icon' => 'dollar-sign',
                         'color' => 'green'
                     ],
                     [
                         'title' => 'Nombre de ventes',
-                        'value' => Sale::where('cashier_id', auth()->id())->whereDate('sale_date', $today)->count(),
+                        'value' => $this->safeModelCall(fn() => Sale::where('cashier_id', auth()->id())->whereDate('sale_date', $today)->count(), 0),
                         'unit' => 'ventes',
                         'icon' => 'shopping-bag',
                         'color' => 'blue'
@@ -262,41 +377,45 @@ class DashboardController extends BaseController
     {
         $alerts = [];
 
-        if (in_array($role, ['administrateur', 'magasinier'])) {
-            $lowStockCount = Product::lowStock()->count();
-            if ($lowStockCount > 0) {
-                $alerts[] = [
-                    'type' => 'warning',
-                    'icon' => 'alert-triangle',
-                    'title' => 'Stock faible',
-                    'message' => "{$lowStockCount} produit(s) ont un stock faible",
-                    'link' => route('products.index', ['filter' => 'low_stock'])
-                ];
+        try {
+            if (in_array($role, ['administrateur', 'magasinier'])) {
+                $lowStockCount = $this->safeModelCall(fn() => Product::whereColumn('current_stock', '<=', 'minimum_stock')->count(), 0);
+                if ($lowStockCount > 0) {
+                    $alerts[] = [
+                        'type' => 'warning',
+                        'icon' => 'alert-triangle',
+                        'title' => 'Stock faible',
+                        'message' => "{$lowStockCount} produit(s) ont un stock faible",
+                        'link' => route('products.index', ['filter' => 'low_stock'])
+                    ];
+                }
+
+                $expiredCount = $this->safeModelCall(fn() => Product::where('expiry_date', '<', Carbon::today())->count(), 0);
+                if ($expiredCount > 0) {
+                    $alerts[] = [
+                        'type' => 'danger',
+                        'icon' => 'calendar-x',
+                        'title' => 'Produits expirés',
+                        'message' => "{$expiredCount} produit(s) sont expirés",
+                        'link' => route('products.index', ['filter' => 'expired'])
+                    ];
+                }
             }
 
-            $expiredCount = Product::expired()->count();
-            if ($expiredCount > 0) {
-                $alerts[] = [
-                    'type' => 'danger',
-                    'icon' => 'calendar-x',
-                    'title' => 'Produits expirés',
-                    'message' => "{$expiredCount} produit(s) sont expirés",
-                    'link' => route('products.index', ['filter' => 'expired'])
-                ];
+            if (in_array($role, ['administrateur', 'responsable_commercial', 'comptable'])) {
+                $overdueCount = $this->safeModelCall(fn() => Invoice::where('status', 'overdue')->count(), 0);
+                if ($overdueCount > 0) {
+                    $alerts[] = [
+                        'type' => 'danger',
+                        'icon' => 'clock',
+                        'title' => 'Factures en retard',
+                        'message' => "{$overdueCount} facture(s) sont en retard de paiement",
+                        'link' => route('invoices.index', ['filter' => 'overdue'])
+                    ];
+                }
             }
-        }
-
-        if (in_array($role, ['administrateur', 'responsable_commercial', 'comptable'])) {
-            $overdueCount = Invoice::overdue()->count();
-            if ($overdueCount > 0) {
-                $alerts[] = [
-                    'type' => 'danger',
-                    'icon' => 'clock',
-                    'title' => 'Factures en retard',
-                    'message' => "{$overdueCount} facture(s) sont en retard de paiement",
-                    'link' => route('invoices.index', ['filter' => 'overdue'])
-                ];
-            }
+        } catch (\Exception $e) {
+            // Ignorer les erreurs si les modèles n'existent pas
         }
 
         return $alerts;
@@ -304,107 +423,176 @@ class DashboardController extends BaseController
 
     protected function getRecentActivities($role, $user): array
     {
-        $query = \App\Models\ActivityLog::with('user')->orderBy('created_at', 'desc')->limit(10);
+        try {
+            if (!class_exists('\App\Models\ActivityLog')) {
+                return [];
+            }
 
-        if (!in_array($role, ['administrateur'])) {
-            $query->where('user_id', $user->id);
+            $query = \App\Models\ActivityLog::with('user')->orderBy('created_at', 'desc')->limit(10);
+
+            if (!in_array($role, ['administrateur'])) {
+                $query->where('user_id', $user->id);
+            }
+
+            return $query->get()->map(function($log) {
+                return [
+                    'user' => $log->user?->name ?? 'Système',
+                    'action' => $log->action_label ?? $log->action ?? 'Action',
+                    'model' => $log->model_name ?? $log->subject_type ?? 'N/A',
+                    'description' => $log->description ?? 'Aucune description',
+                    'time' => $log->time_ago ?? $log->created_at?->diffForHumans() ?? 'N/A',
+                    'icon' => method_exists($log, 'getIcon') ? $log->getIcon() : 'activity',
+                    'color' => method_exists($log, 'getColor') ? $log->getColor() : 'blue',
+                ];
+            })->toArray();
+        } catch (\Exception $e) {
+            return [];
         }
-
-        return $query->get()->map(function($log) {
-            return [
-                'user' => $log->user?->name ?? 'Système',
-                'action' => $log->action_label,
-                'model' => $log->model_name,
-                'description' => $log->description,
-                'time' => $log->time_ago,
-                'icon' => $log->getIcon(),
-                'color' => $log->getColor(),
-            ];
-        })->toArray();
     }
 
     protected function getSalesChangePercentage($today): ?float
     {
-        $todaySales = Sale::whereDate('sale_date', $today)->sum('total_ttc');
-        $yesterdaySales = Sale::whereDate('sale_date', $today->copy()->subDay())->sum('total_ttc');
-        if ($yesterdaySales == 0) return null;
-        return round((($todaySales - $yesterdaySales) / $yesterdaySales) * 100, 1);
+        try {
+            $todaySales = $this->safeModelCall(fn() => Sale::whereDate('sale_date', $today)->sum('total_ttc'), 0);
+            $yesterdaySales = $this->safeModelCall(fn() => Sale::whereDate('sale_date', $today->copy()->subDay())->sum('total_ttc'), 0);
+            if ($yesterdaySales == 0) return null;
+            return round((($todaySales - $yesterdaySales) / $yesterdaySales) * 100, 1);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     protected function getMonthlySalesChange(): ?float
     {
-        $thisMonth = Sale::whereBetween('sale_date', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->sum('total_ttc');
-        $lastMonth = Sale::whereBetween('sale_date', [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()])->sum('total_ttc');
-        if ($lastMonth == 0) return null;
-        return round((($thisMonth - $lastMonth) / $lastMonth) * 100, 1);
+        try {
+            $thisMonth = $this->safeModelCall(fn() => Sale::whereBetween('sale_date', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->sum('total_ttc'), 0);
+            $lastMonth = $this->safeModelCall(fn() => Sale::whereBetween('sale_date', [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()])->sum('total_ttc'), 0);
+            if ($lastMonth == 0) return null;
+            return round((($thisMonth - $lastMonth) / $lastMonth) * 100, 1);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     protected function getSalesChart(): array
     {
-        $days = [];
-        $amounts = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $days[] = $date->format('d/m');
-            $amounts[] = Sale::whereDate('sale_date', $date)->sum('total_ttc');
+        try {
+            $days = [];
+            $amounts = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $date = Carbon::now()->subDays($i);
+                $days[] = $date->format('d/m');
+                $amounts[] = $this->safeModelCall(fn() => Sale::whereDate('sale_date', $date)->sum('total_ttc'), 0);
+            }
+            return ['labels' => $days, 'data' => $amounts, 'title' => 'Ventes des 7 derniers jours'];
+        } catch (\Exception $e) {
+            return [
+                'labels' => ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+                'data' => [0, 0, 0, 0, 0, 0, 0],
+                'title' => 'Ventes des 7 derniers jours'
+            ];
         }
-        return ['labels' => $days, 'data' => $amounts, 'title' => 'Ventes des 7 derniers jours'];
     }
 
     protected function getTopProductsChart(): array
     {
-        $topProducts = Product::select('products.name', DB::raw('SUM(sale_details.quantity) as total_sold'))
-            ->join('sale_details', 'products.id', '=', 'sale_details.product_id')
-            ->join('sales', 'sale_details.sale_id', '=', 'sales.id')
-            ->where('sales.sale_date', '>=', Carbon::now()->subDays(30))
-            ->groupBy('products.id', 'products.name')
-            ->orderBy('total_sold', 'desc')
-            ->limit(10)
-            ->get();
+        try {
+            $topProducts = Product::select('products.name', DB::raw('SUM(sale_details.quantity) as total_sold'))
+                ->join('sale_details', 'products.id', '=', 'sale_details.product_id')
+                ->join('sales', 'sale_details.sale_id', '=', 'sales.id')
+                ->where('sales.sale_date', '>=', Carbon::now()->subDays(30))
+                ->groupBy('products.id', 'products.name')
+                ->orderBy('total_sold', 'desc')
+                ->limit(10)
+                ->get();
 
-        return [
-            'labels' => $topProducts->pluck('name')->toArray(),
-            'data' => $topProducts->pluck('total_sold')->toArray(),
-            'title' => 'Top 10 des produits vendus (30 jours)'
-        ];
+            return [
+                'labels' => $topProducts->pluck('name')->toArray(),
+                'data' => $topProducts->pluck('total_sold')->toArray(),
+                'title' => 'Top 10 des produits vendus (30 jours)'
+            ];
+        } catch (\Exception $e) {
+            return [
+                'labels' => [],
+                'data' => [],
+                'title' => 'Top 10 des produits vendus (30 jours)'
+            ];
+        }
     }
 
     protected function getStockMovementsChart(): array
     {
-        $entries = [];
-        $exits = [];
-        $days = [];
+        try {
+            $entries = [];
+            $exits = [];
+            $days = [];
 
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $days[] = $date->format('d/m');
+            for ($i = 6; $i >= 0; $i--) {
+                $date = Carbon::now()->subDays($i);
+                $days[] = $date->format('d/m');
 
-            $entries[] = StockMovement::where('type', 'entree')->whereDate('movement_date', $date)->sum('quantity');
-            $exits[] = StockMovement::where('type', 'sortie')->whereDate('movement_date', $date)->sum('quantity');
+                $entries[] = $this->safeModelCall(fn() => StockMovement::where('type', 'entree')->whereDate('movement_date', $date)->sum('quantity'), 0);
+                $exits[] = $this->safeModelCall(fn() => StockMovement::where('type', 'sortie')->whereDate('movement_date', $date)->sum('quantity'), 0);
+            }
+
+            return ['labels' => $days, 'entries' => $entries, 'exits' => $exits, 'title' => 'Mouvements de stock (7 jours)'];
+        } catch (\Exception $e) {
+            return [
+                'labels' => ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+                'entries' => [0, 0, 0, 0, 0, 0, 0],
+                'exits' => [0, 0, 0, 0, 0, 0, 0],
+                'title' => 'Mouvements de stock (7 jours)'
+            ];
         }
-
-        return ['labels' => $days, 'entries' => $entries, 'exits' => $exits, 'title' => 'Mouvements de stock (7 jours)'];
     }
 
-    // --- Dashboards par rôle ---
-    public function adminDashboard() { /* contenu inchangé, similaire à avant */ }
-    public function commercialDashboard() { /* contenu inchangé */ }
-    public function vendeurDashboard() { /* contenu inchangé */ }
-    public function magasinierDashboard() { /* contenu inchangé */ }
-    public function achatsDashboard() { /* contenu inchangé */ }
-    public function comptableDashboard() { /* contenu inchangé */ }
-    public function inviteDashboard() { /* contenu inchangé */ }
+    // =============================================================================
+    // MÉTHODES UTILITAIRES
+    // =============================================================================
 
-    // --- APIs ---
-    public function apiStats() { /* contenu inchangé */ }
-    public function apiRecentActivities() { /* contenu inchangé */ }
+    /**
+     * Exécute une fonction de modèle de manière sécurisée
+     */
+    private function safeModelCall(callable $callback, $defaultValue = 0)
+    {
+        try {
+            return $callback();
+        } catch (\Exception $e) {
+            return $defaultValue;
+        }
+    }
 
+    /**
+     * Formate un nombre pour l'affichage
+     */
+    private function safeFormat($value): string
+    {
+        return number_format($value, 0, ',', ' ');
+    }
+
+    /**
+     * Dashboard général (fallback)
+     */
     private function generalDashboard()
     {
+        return $this->general();
+    }
+
+    // =============================================================================
+    // MÉTHODES LEGACY (pour compatibilité avec votre code existant)
+    // =============================================================================
+
+    public function adminDashboard() { return $this->admin(); }
+    public function commercialDashboard() { return $this->manager(); }
+    public function vendeurDashboard() { return $this->sales(); }
+    public function magasinierDashboard() { return $this->stock(); }
+    public function achatsDashboard() { return $this->purchases(); }
+    public function comptableDashboard() { return $this->accounting(); }
+    public function inviteDashboard() { return $this->general(); }
+
+    public function apiStats() { return $this->kpis(); }
+    public function apiRecentActivities() { 
         $user = auth()->user();
-        $dashboardData = $this->getDashboardData($user);
-        $dashboardData['dashboard_type'] = 'general';
-        $this->logActivity('view', null, [], [], 'Consultation du tableau de bord général');
-        return view('dashboard', compact('dashboardData'));
+        return response()->json($this->getRecentActivities($user->role ?? 'invite', $user));
     }
 }

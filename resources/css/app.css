@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-=======
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -123,4 +119,4 @@
         @apply bg-gray-100 text-gray-800;
     }
 }
->>>>>>> 2022c95 (essaie commit)
+
