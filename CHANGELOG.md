@@ -31,6 +31,39 @@
 * Test 5
 * nouvelle API incompatible avec l'ancienne
 
+# 1.0.0 (2025-09-18)
+
+
+### Bug Fixes
+
+* correction d'un bug de test ([70141cf](https://github.com/idhou96/StockGuardian/commit/70141cfeaf800b15350432d1eef5f8a6c3c4a01d))
+* corrige la redirection selon le rôle dans DashboardController ([c719dac](https://github.com/idhou96/StockGuardian/commit/c719dacb28243f1c05e7d2dcab285db994a12183))
+* modifs releaserc ([c8fa6dc](https://github.com/idhou96/StockGuardian/commit/c8fa6dcd81f210e231e1249c3835fcc8efb6aa18))
+* test 1 ([070bc89](https://github.com/idhou96/StockGuardian/commit/070bc894eae8dc20439df1c387b23334c88743df))
+* Test 4 ([a9a4146](https://github.com/idhou96/StockGuardian/commit/a9a4146bab78be678339d80d244fb8e2bd22722b))
+* Test 4 ([80bf4cb](https://github.com/idhou96/StockGuardian/commit/80bf4cb8b84a7fa4b577e0fa3fa1137132cedbe2))
+* Test 4 ([d838e6e](https://github.com/idhou96/StockGuardian/commit/d838e6e16cba8ac77e29884f17d835ef66f0d2b5))
+* Test 4 ([cf24014](https://github.com/idhou96/StockGuardian/commit/cf240142be49880cdd3a6f682a11d1e26820785d))
+* Test 4 ([9af4e8f](https://github.com/idhou96/StockGuardian/commit/9af4e8fb1208b25d5a1e5b04679bd2d12d1ad643))
+
+
+### Features
+
+* ajout d'un module de test ([0a6277f](https://github.com/idhou96/StockGuardian/commit/0a6277fb02100eb1cad8edc7c6c132e69937484e))
+* ajout d'un module de test ([be4a92c](https://github.com/idhou96/StockGuardian/commit/be4a92cc866fa980d29e1b04f4262c58d7f12845))
+* ajout d’une fonctionnalité ([a5ac7dc](https://github.com/idhou96/StockGuardian/commit/a5ac7dc66b5fb4783dce2997e1950f3306a22a6c))
+* ajout d'une nouvelle fonctionnalité de test ([bae6578](https://github.com/idhou96/StockGuardian/commit/bae6578fccb710729815142a19eeb39810d187e7))
+* refonte complète du module de test ([9f51189](https://github.com/idhou96/StockGuardian/commit/9f511898c43221bed2388ce79fa126ee47d2f58e))
+* test 2 ([72afe7b](https://github.com/idhou96/StockGuardian/commit/72afe7bcf965c448bd3c6159e1029052760db5ea))
+* test 3 -m "BREAKING CHANGE: TEST 3" ([62cebbb](https://github.com/idhou96/StockGuardian/commit/62cebbbcc274b73ff6c4a4cd9e8d387f54ec3f95))
+* test breaking change ([53e6b4f](https://github.com/idhou96/StockGuardian/commit/53e6b4f3ec89c198c15bb2e1761e22ce3b797ecb))
+
+
+### BREAKING CHANGES
+
+* Test 5
+* nouvelle API incompatible avec l'ancienne
+
 # [3.0.0](https://github.com/idhou96/StockGuardian/compare/v2.3.0...v3.0.0) (2025-09-15)
 
 ### Features
