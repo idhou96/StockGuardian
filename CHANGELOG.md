@@ -1,3 +1,13 @@
+# [2.0.0](https://github.com/idhou96/StockGuardian/compare/v1.1.0...v2.0.0) (2025-09-18)
+
+
+* feat(api)!: changement du format de réponse JSON ([19732f3](https://github.com/idhou96/StockGuardian/commit/19732f3119aad8dc498b26dd93bd1e0252b6c233))
+
+
+### BREAKING CHANGES
+
+* le champ 'total' a été remplacé par 'total_amount'
+
 # [1.1.0](https://github.com/idhou96/StockGuardian/compare/v1.0.1...v1.1.0) (2025-09-18)
 
 
