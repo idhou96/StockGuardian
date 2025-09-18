@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/idhou96/StockGuardian/compare/v2.0.0...v2.1.0) (2025-09-18)
+
+
+### Features
+
+* Affichage des vues ([e48f214](https://github.com/idhou96/StockGuardian/commit/e48f21488d27c947ee5927908b2083cdc6dc3b27))
+
 # [2.0.0](https://github.com/idhou96/StockGuardian/compare/v1.1.0...v2.0.0) (2025-09-18)
 
 
