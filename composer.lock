@@ -4,6 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
+<<<<<<< HEAD
     "content-hash": "f0606d4cd26db52146786827534280d3",
     "packages": [
         {
@@ -84,6 +85,11 @@
             "time": "2025-02-13T15:07:54+00:00"
         },
         {
+=======
+    "content-hash": "66bd978fc9954fdbdb4960609f03e5a3",
+    "packages": [
+        {
+>>>>>>> 2022c95 (essaie commit)
             "name": "brick/math",
             "version": "0.14.0",
             "source": {
@@ -455,6 +461,7 @@
             "time": "2024-02-05T11:56:58+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "dompdf/dompdf",
             "version": "v3.1.0",
             "source": {
@@ -610,6 +617,8 @@
             "time": "2024-04-29T13:26:35+00:00"
         },
         {
+=======
+>>>>>>> 2022c95 (essaie commit)
             "name": "dragonmantank/cron-expression",
             "version": "v3.4.0",
             "source": {
@@ -1286,6 +1295,7 @@
             "time": "2025-08-22T14:27:06+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "intervention/gif",
             "version": "4.2.2",
             "source": {
@@ -1441,6 +1451,19 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/laravel/framework/zipball/868c1f2d3dba4df6d21e3a8d818479f094cfd942",
                 "reference": "868c1f2d3dba4df6d21e3a8d818479f094cfd942",
+=======
+            "name": "laravel/framework",
+            "version": "v12.29.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/framework.git",
+                "reference": "a9e4c73086f5ba38383e9c1d74b84fe46aac730b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/a9e4c73086f5ba38383e9c1d74b84fe46aac730b",
+                "reference": "a9e4c73086f5ba38383e9c1d74b84fe46aac730b",
+>>>>>>> 2022c95 (essaie commit)
                 "shasum": ""
             },
             "require": {
@@ -1468,6 +1491,10 @@
                 "monolog/monolog": "^3.0",
                 "nesbot/carbon": "^3.8.4",
                 "nunomaduro/termwind": "^2.0",
+<<<<<<< HEAD
+=======
+                "phiki/phiki": "v2.0.0",
+>>>>>>> 2022c95 (essaie commit)
                 "php": "^8.2",
                 "psr/container": "^1.1.1|^2.0.1",
                 "psr/log": "^1.0|^2.0|^3.0",
@@ -1577,7 +1604,11 @@
                 "ext-pdo": "Required to use all database features.",
                 "ext-posix": "Required to use all features of the queue worker.",
                 "ext-redis": "Required to use the Redis cache and queue drivers (^4.0|^5.0|^6.0).",
+<<<<<<< HEAD
                 "fakerphp/faker": "Required to use the eloquent factory builder (^1.9.1).",
+=======
+                "fakerphp/faker": "Required to generate fake data using the fake() helper (^1.23).",
+>>>>>>> 2022c95 (essaie commit)
                 "filp/whoops": "Required for friendly error pages in development (^2.14.3).",
                 "laravel/tinker": "Required to use the tinker console command (^2.0).",
                 "league/flysystem-aws-s3-v3": "Required to use the Flysystem S3 driver (^3.25.1).",
@@ -1646,7 +1677,11 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
+<<<<<<< HEAD
             "time": "2025-09-04T14:58:12+00:00"
+=======
+            "time": "2025-09-16T14:15:03+00:00"
+>>>>>>> 2022c95 (essaie commit)
         },
         {
             "name": "laravel/prompts",
@@ -2526,6 +2561,7 @@
             "time": "2025-07-17T05:12:15+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "livewire/volt",
             "version": "v1.7.2",
             "source": {
@@ -2724,6 +2760,8 @@
             "time": "2025-07-25T09:04:22+00:00"
         },
         {
+=======
+>>>>>>> 2022c95 (essaie commit)
             "name": "monolog/monolog",
             "version": "3.9.0",
             "source": {
@@ -3228,6 +3266,7 @@
             "time": "2025-05-08T08:14:37+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "paragonie/sodium_compat",
             "version": "v2.1.0",
             "source": {
@@ -3341,10 +3380,52 @@
             "autoload": {
                 "psr-0": {
                     "PHPExcel": "Classes/"
+=======
+            "name": "phiki/phiki",
+            "version": "v2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phikiphp/phiki.git",
+                "reference": "461f6dd7e91dc3a95463b42f549ac7d0aab4702f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phikiphp/phiki/zipball/461f6dd7e91dc3a95463b42f549ac7d0aab4702f",
+                "reference": "461f6dd7e91dc3a95463b42f549ac7d0aab4702f",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "league/commonmark": "^2.5.3",
+                "php": "^8.2",
+                "psr/simple-cache": "^3.0"
+            },
+            "require-dev": {
+                "illuminate/support": "^11.45",
+                "laravel/pint": "^1.18.1",
+                "orchestra/testbench": "^9.15",
+                "pestphp/pest": "^3.5.1",
+                "phpstan/extension-installer": "^1.4.3",
+                "phpstan/phpstan": "^2.0",
+                "symfony/var-dumper": "^7.1.6"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Phiki\\Adapters\\Laravel\\PhikiServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phiki\\": "src/"
+>>>>>>> 2022c95 (essaie commit)
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
+<<<<<<< HEAD
                 "LGPL"
             ],
             "authors": [
@@ -3379,6 +3460,34 @@
             },
             "abandoned": "phpoffice/phpspreadsheet",
             "time": "2015-05-01T07:00:55+00:00"
+=======
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ryan Chandler",
+                    "email": "support@ryangjchandler.co.uk",
+                    "homepage": "https://ryangjchandler.co.uk",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Syntax highlighting using TextMate grammars in PHP.",
+            "support": {
+                "issues": "https://github.com/phikiphp/phiki/issues",
+                "source": "https://github.com/phikiphp/phiki/tree/v2.0.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/ryangjchandler",
+                    "type": "github"
+                },
+                {
+                    "url": "https://buymeacoffee.com/ryangjchandler",
+                    "type": "other"
+                }
+            ],
+            "time": "2025-08-28T18:20:27+00:00"
+>>>>>>> 2022c95 (essaie commit)
         },
         {
             "name": "phpoption/phpoption",
@@ -3946,6 +4055,7 @@
             "time": "2025-08-04T12:39:37+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "pusher/pusher-php-server",
             "version": "7.2.7",
             "source": {
@@ -4007,6 +4117,8 @@
             "time": "2025-01-06T10:56:20+00:00"
         },
         {
+=======
+>>>>>>> 2022c95 (essaie commit)
             "name": "ralouphie/getallheaders",
             "version": "3.0.3",
             "source": {
@@ -4205,6 +4317,7 @@
             "time": "2025-09-04T20:59:21+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "sabberworm/php-css-parser",
             "version": "v8.9.0",
             "source": {
@@ -4271,6 +4384,8 @@
             "time": "2025-07-11T13:20:48+00:00"
         },
         {
+=======
+>>>>>>> 2022c95 (essaie commit)
             "name": "spatie/laravel-permission",
             "version": "6.21.0",
             "source": {
@@ -7290,6 +7405,7 @@
             "time": "2025-04-30T06:54:44+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "laravel/breeze",
             "version": "v2.3.8",
             "source": {
@@ -7351,6 +7467,8 @@
             "time": "2025-07-18T18:49:59+00:00"
         },
         {
+=======
+>>>>>>> 2022c95 (essaie commit)
             "name": "laravel/pail",
             "version": "v1.2.3",
             "source": {
@@ -7431,6 +7549,7 @@
         },
         {
             "name": "laravel/pint",
+<<<<<<< HEAD
             "version": "v1.24.0",
             "source": {
                 "type": "git",
@@ -7441,6 +7560,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/laravel/pint/zipball/0345f3b05f136801af8c339f9d16ef29e6b4df8a",
                 "reference": "0345f3b05f136801af8c339f9d16ef29e6b4df8a",
+=======
+            "version": "v1.25.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/pint.git",
+                "reference": "595de38458c6b0ab4cae4bcc769c2e5c5d5b8e96"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel/pint/zipball/595de38458c6b0ab4cae4bcc769c2e5c5d5b8e96",
+                "reference": "595de38458c6b0ab4cae4bcc769c2e5c5d5b8e96",
+>>>>>>> 2022c95 (essaie commit)
                 "shasum": ""
             },
             "require": {
@@ -7451,9 +7582,15 @@
                 "php": "^8.2.0"
             },
             "require-dev": {
+<<<<<<< HEAD
                 "friendsofphp/php-cs-fixer": "^3.82.2",
                 "illuminate/view": "^11.45.1",
                 "larastan/larastan": "^3.5.0",
+=======
+                "friendsofphp/php-cs-fixer": "^3.87.2",
+                "illuminate/view": "^11.46.0",
+                "larastan/larastan": "^3.7.1",
+>>>>>>> 2022c95 (essaie commit)
                 "laravel-zero/framework": "^11.45.0",
                 "mockery/mockery": "^1.6.12",
                 "nunomaduro/termwind": "^2.3.1",
@@ -7464,9 +7601,12 @@
             ],
             "type": "project",
             "autoload": {
+<<<<<<< HEAD
                 "files": [
                     "overrides/Runner/Parallel/ProcessFactory.php"
                 ],
+=======
+>>>>>>> 2022c95 (essaie commit)
                 "psr-4": {
                     "App\\": "app/",
                     "Database\\Seeders\\": "database/seeders/",
@@ -7496,7 +7636,11 @@
                 "issues": "https://github.com/laravel/pint/issues",
                 "source": "https://github.com/laravel/pint"
             },
+<<<<<<< HEAD
             "time": "2025-07-10T18:09:32+00:00"
+=======
+            "time": "2025-09-17T01:36:44+00:00"
+>>>>>>> 2022c95 (essaie commit)
         },
         {
             "name": "laravel/sail",
@@ -8258,6 +8402,7 @@
         },
         {
             "name": "phpunit/phpunit",
+<<<<<<< HEAD
             "version": "11.5.36",
             "source": {
                 "type": "git",
@@ -8268,6 +8413,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/264a87c7ef68b1ab9af7172357740dc266df5957",
                 "reference": "264a87c7ef68b1ab9af7172357740dc266df5957",
+=======
+            "version": "11.5.39",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sebastianbergmann/phpunit.git",
+                "reference": "ad5597f79d8489d2870073ac0bc0dd0ad1fa9931"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/ad5597f79d8489d2870073ac0bc0dd0ad1fa9931",
+                "reference": "ad5597f79d8489d2870073ac0bc0dd0ad1fa9931",
+>>>>>>> 2022c95 (essaie commit)
                 "shasum": ""
             },
             "require": {
@@ -8339,7 +8496,11 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
+<<<<<<< HEAD
                 "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.36"
+=======
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.39"
+>>>>>>> 2022c95 (essaie commit)
             },
             "funding": [
                 {
@@ -8363,7 +8524,11 @@
                     "type": "tidelift"
                 }
             ],
+<<<<<<< HEAD
             "time": "2025-09-03T06:24:17+00:00"
+=======
+            "time": "2025-09-14T06:20:41+00:00"
+>>>>>>> 2022c95 (essaie commit)
         },
         {
             "name": "sebastian/cli-parser",

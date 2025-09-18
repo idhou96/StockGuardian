@@ -1,8 +1,14 @@
 <?php
+<<<<<<< HEAD
 // test breaking change
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
     BaseController,
+=======
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\{
+>>>>>>> 2022c95 (essaie commit)
     DashboardController,
     ProductController,
     ProductFamilyController,
@@ -20,19 +26,26 @@ use App\Http\Controllers\{
     PermissionController,
     ReportController,
     SettingController,
+<<<<<<< HEAD
     SystemSettingController,
     LogController,
     ActivityController,
     MaintenanceController,
     ImportExportController,
+=======
+>>>>>>> 2022c95 (essaie commit)
     NotificationController,
     ProfileController,
     HelpController,
     ReturnNoteController,
     DeliveryNoteController,
+<<<<<<< HEAD
     AlertController,
     BackupController,
     PerformanceController
+=======
+    AlertController
+>>>>>>> 2022c95 (essaie commit)
 };
 
 /*
@@ -40,7 +53,10 @@ use App\Http\Controllers\{
 | Routes d'Authentification
 |--------------------------------------------------------------------------
 */
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2022c95 (essaie commit)
 require __DIR__.'/auth.php';
 
 /*
@@ -48,12 +64,16 @@ require __DIR__.'/auth.php';
 | Routes Publiques
 |--------------------------------------------------------------------------
 */
+<<<<<<< HEAD
 
 // Route principale avec redirection automatique par middleware
+=======
+>>>>>>> 2022c95 (essaie commit)
 Route::get('/', function () {
     if (!auth()->check()) {
         return redirect('/login');
     }
+<<<<<<< HEAD
     
     // Le middleware 'role.redirect' s'occupera de la redirection automatique
     return redirect('/dashboard');
@@ -183,10 +203,75 @@ Route::middleware(['auth.extended'])->group(function () {
             Route::get('/report/monthly', [SaleController::class, 'monthlyReport'])->name('report.monthly');
             Route::get('/export/excel', [SaleController::class, 'exportExcel'])->name('export.excel');
         });
+=======
+    return redirect('/dashboard');
+})->name('home');
+
+/*
+|--------------------------------------------------------------------------
+| Routes Protégées - Middleware Auth Standard
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'verified'])->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | DASHBOARD - Redirection par rôle
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Dashboards spécialisés par rôle
+    Route::get('/dashboard/admin', [DashboardController::class, 'adminDashboard'])->name('dashboard.admin');
+    Route::get('/dashboard/commercial', [DashboardController::class, 'commercialDashboard'])->name('dashboard.commercial');
+    Route::get('/dashboard/vendeur', [DashboardController::class, 'vendeurDashboard'])->name('dashboard.vendeur');
+    Route::get('/dashboard/magasinier', [DashboardController::class, 'magasinierDashboard'])->name('dashboard.magasinier');
+    Route::get('/dashboard/achats', [DashboardController::class, 'achatsDashboard'])->name('dashboard.achats');
+    Route::get('/dashboard/comptable', [DashboardController::class, 'comptableDashboard'])->name('dashboard.comptable');
+    Route::get('/dashboard/invite', [DashboardController::class, 'inviteDashboard'])->name('dashboard.invite');
+
+    /*
+    |--------------------------------------------------------------------------
+    | GESTION DES PRODUITS
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('products', ProductController::class);
+    Route::prefix('products')->name('products.')->group(function () {
+        Route::get('/search', [ProductController::class, 'search'])->name('search');
+        Route::get('/search-ajax', [ProductController::class, 'searchAjax'])->name('search-ajax');
+        Route::get('/barcode/{barcode}', [ProductController::class, 'findByBarcode'])->name('barcode');
+        Route::get('/export', [ProductController::class, 'export'])->name('export');
+        Route::post('/import', [ProductController::class, 'import'])->name('import');
+        Route::post('/{product}/duplicate', [ProductController::class, 'duplicate'])->name('duplicate');
+        Route::get('/{product}/print-label', [ProductController::class, 'printLabel'])->name('print-label');
+        Route::post('/{product}/toggle-favorite', [ProductController::class, 'toggleFavorite'])->name('toggle-favorite');
+        Route::get('/{product}/stock-history', [ProductController::class, 'stockHistory'])->name('stock-history');
+    });
+
+    // Familles et principes actifs
+    Route::resource('product-families', ProductFamilyController::class);
+    Route::resource('active-principles', ActivePrincipleController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | GESTION DES VENTES (accessible selon les rôles)
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('sales', SaleController::class);
+    Route::prefix('sales')->name('sales.')->group(function () {
+        Route::get('/{sale}/print', [SaleController::class, 'print'])->name('print');
+        Route::get('/{sale}/pdf', [SaleController::class, 'pdf'])->name('pdf');
+        Route::post('/{sale}/cancel', [SaleController::class, 'cancel'])->name('cancel');
+        Route::post('/{sale}/refund', [SaleController::class, 'refund'])->name('refund');
+        Route::get('/report/daily', [SaleController::class, 'dailyReport'])->name('report.daily');
+        Route::get('/report/monthly', [SaleController::class, 'monthlyReport'])->name('report.monthly');
+        Route::get('/export/excel', [SaleController::class, 'exportExcel'])->name('export.excel');
+>>>>>>> 2022c95 (essaie commit)
     });
 
     /*
     |--------------------------------------------------------------------------
+<<<<<<< HEAD
     | GESTION DU STOCK & INVENTAIRES - Groupe Stock
     |--------------------------------------------------------------------------
     */
@@ -239,10 +324,53 @@ Route::middleware(['auth.extended'])->group(function () {
             Route::get('/{warehouse}/movements', [WarehouseController::class, 'movements'])->name('movements');
             Route::post('/{warehouse}/transfer', [WarehouseController::class, 'transfer'])->name('transfer');
         });
+=======
+    | POINT DE VENTE (POS)
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/pos', function () {
+        return view('pos.index');
+    })->name('pos.index');
+
+    /*
+    |--------------------------------------------------------------------------
+    | GESTION DU STOCK
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('stock-movements')->name('stock-movements.')->group(function () {
+        Route::get('/', [StockMovementController::class, 'index'])->name('index');
+        Route::get('/create-entry', [StockMovementController::class, 'createEntry'])->name('create-entry');
+        Route::post('/store-entry', [StockMovementController::class, 'storeEntry'])->name('store-entry');
+        Route::get('/create-exit', [StockMovementController::class, 'createExit'])->name('create-exit');
+        Route::post('/store-exit', [StockMovementController::class, 'storeExit'])->name('store-exit');
+        Route::get('/{movement}', [StockMovementController::class, 'show'])->name('show');
+        Route::post('/{movement}/cancel', [StockMovementController::class, 'cancel'])->name('cancel');
+        Route::get('/export/report', [StockMovementController::class, 'exportReport'])->name('export.report');
+    });
+
+    // Inventaires
+    Route::resource('inventories', InventoryController::class);
+    Route::prefix('inventories')->name('inventories.')->group(function () {
+        Route::post('/{inventory}/start', [InventoryController::class, 'start'])->name('start');
+        Route::post('/{inventory}/validate', [InventoryController::class, 'validate'])->name('validate');
+        Route::post('/{inventory}/apply', [InventoryController::class, 'apply'])->name('apply');
+        Route::get('/{inventory}/print', [InventoryController::class, 'print'])->name('print');
+        Route::get('/{inventory}/export', [InventoryController::class, 'export'])->name('export');
+    });
+
+    // Régularisations et entrepôts
+    Route::resource('stock-regularizations', StockRegularizationController::class);
+    Route::resource('warehouses', WarehouseController::class);
+    Route::prefix('warehouses')->name('warehouses.')->group(function () {
+        Route::get('/{warehouse}/stock', [WarehouseController::class, 'stock'])->name('stock');
+        Route::get('/{warehouse}/movements', [WarehouseController::class, 'movements'])->name('movements');
+        Route::post('/{warehouse}/transfer', [WarehouseController::class, 'transfer'])->name('transfer');
+>>>>>>> 2022c95 (essaie commit)
     });
 
     /*
     |--------------------------------------------------------------------------
+<<<<<<< HEAD
     | GESTION DES ACHATS & FOURNISSEURS - Groupe Purchases
     |--------------------------------------------------------------------------
     */
@@ -273,6 +401,31 @@ Route::middleware(['auth.extended'])->group(function () {
             Route::get('/{supplier}/purchase-history', [SupplierController::class, 'purchaseHistory'])->name('purchase-history');
             Route::get('/{supplier}/account-statement', [SupplierController::class, 'accountStatement'])->name('account-statement');
         });
+=======
+    | GESTION DES ACHATS
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('purchase-orders', PurchaseOrderController::class);
+    Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
+        Route::post('/{order}/send', [PurchaseOrderController::class, 'send'])->name('send');
+        Route::get('/{order}/receive', [PurchaseOrderController::class, 'receiveForm'])->name('receive-form');
+        Route::post('/{order}/receive', [PurchaseOrderController::class, 'receive'])->name('receive');
+        Route::get('/{order}/print', [PurchaseOrderController::class, 'print'])->name('print');
+        Route::post('/{order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('cancel');
+    });
+
+    // Bons de livraison et retour
+    Route::resource('delivery-notes', DeliveryNoteController::class);
+    Route::resource('return-notes', ReturnNoteController::class);
+
+    // Fournisseurs
+    Route::resource('suppliers', SupplierController::class);
+    Route::prefix('suppliers')->name('suppliers.')->group(function () {
+        Route::get('/export', [SupplierController::class, 'export'])->name('export');
+        Route::post('/import', [SupplierController::class, 'import'])->name('import');
+        Route::get('/{supplier}/purchase-history', [SupplierController::class, 'purchaseHistory'])->name('purchase-history');
+        Route::get('/{supplier}/account-statement', [SupplierController::class, 'accountStatement'])->name('account-statement');
+>>>>>>> 2022c95 (essaie commit)
     });
 
     /*
@@ -280,6 +433,7 @@ Route::middleware(['auth.extended'])->group(function () {
     | GESTION DES CLIENTS
     |--------------------------------------------------------------------------
     */
+<<<<<<< HEAD
     
     Route::resource('customers', CustomerController::class)
         ->middleware('permission:customers.view|customers.create|customers.edit|customers.delete');
@@ -297,6 +451,14 @@ Route::middleware(['auth.extended'])->group(function () {
         Route::get('/{customer}/account-statement', [CustomerController::class, 'accountStatement'])
             ->middleware('permission:sales.view')
             ->name('account-statement');
+=======
+    Route::resource('customers', CustomerController::class);
+    Route::prefix('customers')->name('customers.')->group(function () {
+        Route::get('/export', [CustomerController::class, 'export'])->name('export');
+        Route::post('/import', [CustomerController::class, 'import'])->name('import');
+        Route::get('/{customer}/sales-history', [CustomerController::class, 'salesHistory'])->name('sales-history');
+        Route::get('/{customer}/account-statement', [CustomerController::class, 'accountStatement'])->name('account-statement');
+>>>>>>> 2022c95 (essaie commit)
     });
 
     /*
@@ -304,8 +466,12 @@ Route::middleware(['auth.extended'])->group(function () {
     | RAPPORTS ET ANALYSES
     |--------------------------------------------------------------------------
     */
+<<<<<<< HEAD
     
     Route::prefix('reports')->name('reports.')->middleware('permission:reports.view')->group(function () {
+=======
+    Route::prefix('reports')->name('reports.')->group(function () {
+>>>>>>> 2022c95 (essaie commit)
         Route::get('/', [ReportController::class, 'index'])->name('index');
         
         // Rapports de ventes
@@ -335,11 +501,14 @@ Route::middleware(['auth.extended'])->group(function () {
         // Analyses ABC/XYZ
         Route::get('/abc-analysis', [ReportController::class, 'abcAnalysis'])->name('abc-analysis');
         Route::post('/abc-analysis/refresh', [ReportController::class, 'refreshAbcAnalysis'])->name('abc-analysis.refresh');
+<<<<<<< HEAD
         
         // Configuration rapports
         Route::get('/settings', [ReportController::class, 'settings'])
             ->middleware('permission:settings.edit')
             ->name('settings');
+=======
+>>>>>>> 2022c95 (essaie commit)
     });
 
     /*
@@ -347,6 +516,7 @@ Route::middleware(['auth.extended'])->group(function () {
     | ALERTES SYSTÈME
     |--------------------------------------------------------------------------
     */
+<<<<<<< HEAD
     
     Route::prefix('alerts')->name('alerts.')->group(function () {
         Route::get('/stock', [AlertController::class, 'stock'])
@@ -362,10 +532,19 @@ Route::middleware(['auth.extended'])->group(function () {
             ->name('mark-resolved');
         Route::post('/mark-all-resolved', [AlertController::class, 'markAllResolved'])
             ->name('mark-all-resolved');
+=======
+    Route::prefix('alerts')->name('alerts.')->group(function () {
+        Route::get('/stock', [AlertController::class, 'stock'])->name('stock');
+        Route::get('/expiry', [AlertController::class, 'expiry'])->name('expiry');
+        Route::get('/low-stock', [AlertController::class, 'lowStock'])->name('low-stock');
+        Route::post('/mark-resolved/{alert}', [AlertController::class, 'markResolved'])->name('mark-resolved');
+        Route::post('/mark-all-resolved', [AlertController::class, 'markAllResolved'])->name('mark-all-resolved');
+>>>>>>> 2022c95 (essaie commit)
     });
 
     /*
     |--------------------------------------------------------------------------
+<<<<<<< HEAD
     | ADMINISTRATION UTILISATEURS - Groupe Admin
     |--------------------------------------------------------------------------
     */
@@ -387,10 +566,30 @@ Route::middleware(['auth.extended'])->group(function () {
             Route::post('/toggle', [PermissionController::class, 'toggle'])->name('toggle');
             Route::post('/toggle-module', [PermissionController::class, 'toggleModule'])->name('toggle-module');
         });
+=======
+    | ADMINISTRATION UTILISATEURS
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('users', UserController::class);
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::post('/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle-status');
+        Route::post('/{user}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
+    });
+
+    Route::resource('roles', RoleController::class);
+
+    Route::prefix('permissions')->name('permissions.')->group(function () {
+        Route::get('/', [PermissionController::class, 'index'])->name('index');
+        Route::post('/assign', [PermissionController::class, 'assign'])->name('assign');
+        Route::post('/revoke', [PermissionController::class, 'revoke'])->name('revoke');
+        Route::post('/toggle', [PermissionController::class, 'toggle'])->name('toggle');
+        Route::post('/toggle-module', [PermissionController::class, 'toggleModule'])->name('toggle-module');
+>>>>>>> 2022c95 (essaie commit)
     });
 
     /*
     |--------------------------------------------------------------------------
+<<<<<<< HEAD
     | PARAMÈTRES & CONFIGURATION SYSTÈME - Groupe Admin
     |--------------------------------------------------------------------------
     */
@@ -470,6 +669,17 @@ Route::middleware(['auth.extended'])->group(function () {
             Route::get('/database-stats', [PerformanceController::class, 'databaseStats'])->name('database-stats');
             Route::post('/optimize', [PerformanceController::class, 'optimize'])->name('optimize');
         });
+=======
+    | PARAMÈTRES & CONFIGURATION
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [SettingController::class, 'index'])->name('index');
+        Route::post('/', [SettingController::class, 'store'])->name('store');
+        Route::get('/export', [SettingController::class, 'export'])->name('export');
+        Route::post('/import', [SettingController::class, 'import'])->name('import');
+        Route::post('/reset', [SettingController::class, 'reset'])->name('reset');
+>>>>>>> 2022c95 (essaie commit)
     });
 
     /*
@@ -477,7 +687,10 @@ Route::middleware(['auth.extended'])->group(function () {
     | NOTIFICATIONS
     |--------------------------------------------------------------------------
     */
+<<<<<<< HEAD
     
+=======
+>>>>>>> 2022c95 (essaie commit)
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('/unread', [NotificationController::class, 'unread'])->name('unread');
@@ -492,7 +705,10 @@ Route::middleware(['auth.extended'])->group(function () {
     | PROFIL UTILISATEUR
     |--------------------------------------------------------------------------
     */
+<<<<<<< HEAD
     
+=======
+>>>>>>> 2022c95 (essaie commit)
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'show'])->name('show');
         Route::put('/', [ProfileController::class, 'update'])->name('update');
@@ -507,7 +723,10 @@ Route::middleware(['auth.extended'])->group(function () {
     | AIDE ET DOCUMENTATION
     |--------------------------------------------------------------------------
     */
+<<<<<<< HEAD
     
+=======
+>>>>>>> 2022c95 (essaie commit)
     Route::prefix('help')->name('help.')->group(function () {
         Route::get('/', [HelpController::class, 'index'])->name('index');
         Route::get('/search', [HelpController::class, 'search'])->name('search');
@@ -520,6 +739,7 @@ Route::middleware(['auth.extended'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+<<<<<<< HEAD
     | IMPORT/EXPORT DE DONNÉES - Groupe Admin
     |--------------------------------------------------------------------------
     */
@@ -559,24 +779,252 @@ Route::middleware(['auth.extended'])->group(function () {
         }
         abort(404);
     })->middleware('signed')->name('temp.download');
+=======
+    | UTILITAIRES
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/barcode/{code}', function ($code) {
+        // Génération de codes-barres si service disponible
+        return response()->json(['barcode' => $code]);
+    })->name('barcode.generate');
+    
+    Route::get('/qr/{type}/{id}', function ($type, $id) {
+        // Génération de QR codes si service disponible
+        return response()->json(['qr' => $type . '/' . $id]);
+    })->name('qr.generate');
+
+    
+/*
+|--------------------------------------------------------------------------
+| MAINTENANCE & SYSTÈME
+|--------------------------------------------------------------------------
+*/
+Route::prefix('maintenance')->name('maintenance.')->group(function () {
+    Route::get('/', function () {
+        return view('maintenance.index');
+    })->name('index');
+    
+    // Optimisation système  
+    Route::post('/optimize-database', function () {
+        Artisan::call('optimize:clear');
+        Artisan::call('config:cache');
+        return redirect()->back()->with('success', 'Base de données optimisée');
+    })->name('optimize-database');
+    
+    Route::post('/clear-cache', function () {
+        Artisan::call('cache:clear');
+        Artisan::call('config:clear');
+        Artisan::call('route:clear');
+        Artisan::call('view:clear');
+        return redirect()->back()->with('success', 'Cache nettoyé');
+    })->name('clear-cache');
+    
+    Route::post('/clear-logs', function () {
+        $files = glob(storage_path('logs/*.log'));
+        foreach($files as $file) {
+            if(is_file($file)) unlink($file);
+        }
+        return redirect()->back()->with('success', 'Logs nettoyés');
+    })->name('clear-logs');
+    
+    Route::post('/clear-sessions', function () {
+        Artisan::call('session:clear');
+        return redirect()->back()->with('success', 'Sessions nettoyées');
+    })->name('clear-sessions');
+});
+
+/*
+|--------------------------------------------------------------------------
+| SAUVEGARDES
+|--------------------------------------------------------------------------
+*/
+Route::prefix('backups')->name('backups.')->group(function () {
+    Route::get('/', function () {
+        return view('backups.index');
+    })->name('index');
+    
+    Route::post('/create', function () {
+        // Logique de création de sauvegarde
+        return redirect()->back()->with('success', 'Sauvegarde créée');
+    })->name('create');
+    
+    Route::post('/create-scheduled', function () {
+        return redirect()->back()->with('success', 'Sauvegarde programmée');
+    })->name('create-scheduled');
+});
+
+/*
+|--------------------------------------------------------------------------
+| LOGS & ACTIVITÉ
+|--------------------------------------------------------------------------
+*/
+Route::prefix('activity')->name('activity.')->group(function () {
+    Route::get('/', function () {
+        return view('activity.index');
+    })->name('index');
+    
+    Route::get('/logs', function () {
+        return view('activity.logs');
+    })->name('logs');
+    
+    Route::get('/user/{user}', function ($user) {
+        return view('activity.user', compact('user'));
+    })->name('user');
+    
+    Route::delete('/clear/{days?}', function ($days = 30) {
+        // Logique de nettoyage des logs
+        return redirect()->back()->with('success', 'Activités nettoyées');
+    })->name('clear');
+});
+
+Route::prefix('logs')->name('logs.')->group(function () {
+    Route::get('/', function () {
+        $logFiles = glob(storage_path('logs/*.log'));
+        return view('logs.index', compact('logFiles'));
+    })->name('index');
+    
+    Route::get('/export', function () {
+        // Logique d'export des logs
+        return redirect()->back()->with('success', 'Logs exportés');
+    })->name('export');
+    
+    Route::delete('/clear-old', function () {
+        $files = glob(storage_path('logs/*.log'));
+        $cleared = 0;
+        foreach($files as $file) {
+            if(is_file($file) && filemtime($file) < strtotime('-30 days')) {
+                unlink($file);
+                $cleared++;
+            }
+        }
+        return redirect()->back()->with('success', "$cleared ancien(s) fichier(s) log supprimé(s)");
+    })->name('clear-old');
+    
+    Route::get('/download/{file}', function ($file) {
+        $path = storage_path('logs/' . $file);
+        if (file_exists($path)) {
+            return response()->download($path);
+        }
+        abort(404);
+    })->name('download');
+});
+
+/*
+|--------------------------------------------------------------------------
+| PERFORMANCE & MONITORING
+|--------------------------------------------------------------------------
+*/
+Route::prefix('performance')->name('performance.')->group(function () {
+    Route::get('/monitor', function () {
+        return view('performance.monitor');
+    })->name('monitor');
+    
+    Route::get('/system-info', function () {
+        return response()->json([
+            'php_version' => PHP_VERSION,
+            'laravel_version' => app()->version(),
+            'memory_usage' => memory_get_usage(true),
+            'memory_peak' => memory_get_peak_usage(true),
+        ]);
+    })->name('system-info');
+    
+    Route::get('/database-stats', function () {
+        return response()->json([
+            'connection' => 'OK',
+            'tables_count' => 'N/A'
+        ]);
+    })->name('database-stats');
+    
+    Route::post('/optimize', function () {
+        Artisan::call('optimize');
+        return redirect()->back()->with('success', 'Système optimisé');
+    })->name('optimize');
+});
+
+/*
+|--------------------------------------------------------------------------
+| IMPORT/EXPORT DE DONNÉES
+|--------------------------------------------------------------------------
+*/
+Route::prefix('import-export')->name('import-export.')->group(function () {
+    Route::get('/', function () {
+        return view('import-export.index');
+    })->name('index');
+    
+    Route::get('/templates', function () {
+        return view('import-export.templates');
+    })->name('templates');
+    
+    Route::get('/template/{type}', function ($type) {
+        // Génération de template selon le type
+        return response()->json(['template' => $type]);
+    })->name('template');
+    
+    Route::post('/import/{type}', function ($type) {
+        return redirect()->back()->with('success', 'Import ' . $type . ' terminé');
+    })->name('import');
+    
+    Route::get('/export/{type}', function ($type) {
+        return redirect()->back()->with('success', 'Export ' . $type . ' terminé');
+    })->name('export');
+    
+    Route::get('/export-all', function () {
+        return redirect()->back()->with('success', 'Export complet terminé');
+    })->name('export-all');
+    
+    Route::post('/import-all', function () {
+        return redirect()->back()->with('success', 'Import complet terminé');
+    })->name('import-all');
+});
+
+/*
+|--------------------------------------------------------------------------
+| ROUTES UTILITAIRES SUPPLÉMENTAIRES
+|--------------------------------------------------------------------------
+*/
+
+// Route pour les factures (si référencées quelque part)
+Route::prefix('invoices')->name('invoices.')->group(function () {
+    Route::get('/', function () {
+        return view('invoices.index');
+    })->name('index');
+});
+
+// Route pour les paiements (si référencées)
+Route::prefix('payments')->name('payments.')->group(function () {
+    Route::get('/', function () {
+        return view('payments.index');
+    })->name('index');
+});
+>>>>>>> 2022c95 (essaie commit)
 
 });
 
 /*
 |--------------------------------------------------------------------------
+<<<<<<< HEAD
 | ROUTES API (v1) - Middleware Auth Sanctum avec Groupes
 |--------------------------------------------------------------------------
 */
 
+=======
+| ROUTES API SIMPLES
+|--------------------------------------------------------------------------
+*/
+>>>>>>> 2022c95 (essaie commit)
 Route::prefix('api/v1')->middleware(['auth:sanctum'])->name('api.')->group(function () {
     
     // Dashboard API
     Route::get('dashboard/stats', [DashboardController::class, 'apiStats'])->name('dashboard.stats');
+<<<<<<< HEAD
     Route::get('dashboard/recent-activities', [DashboardController::class, 'apiRecentActivities'])->name('dashboard.activities');
+=======
+>>>>>>> 2022c95 (essaie commit)
     
     // Products API
     Route::apiResource('products', ProductController::class);
     Route::get('products/search/{term}', [ProductController::class, 'apiSearch'])->name('products.search');
+<<<<<<< HEAD
     Route::get('products/barcode/{barcode}', [ProductController::class, 'apiFindByBarcode'])->name('products.barcode');
     
     // Sales API
@@ -590,10 +1038,16 @@ Route::prefix('api/v1')->middleware(['auth:sanctum'])->name('api.')->group(funct
         Route::get('stock/alerts', [StockMovementController::class, 'apiAlerts'])->name('stock.alerts');
         Route::get('stock/movements/recent', [StockMovementController::class, 'apiRecentMovements'])->name('stock.recent-movements');
     });
+=======
+    
+    // Sales API
+    Route::apiResource('sales', SaleController::class);
+>>>>>>> 2022c95 (essaie commit)
     
     // Customers API
     Route::apiResource('customers', CustomerController::class);
     Route::get('customers/search/{term}', [CustomerController::class, 'apiSearch'])->name('customers.search');
+<<<<<<< HEAD
     
     // Suppliers API
     Route::middleware(['purchases'])->group(function () {
@@ -605,10 +1059,13 @@ Route::prefix('api/v1')->middleware(['auth:sanctum'])->name('api.')->group(funct
         ->middleware('permission:reports.view')
         ->name('reports.dashboard-data');
     
+=======
+>>>>>>> 2022c95 (essaie commit)
 });
 
 /*
 |--------------------------------------------------------------------------
+<<<<<<< HEAD
 | ROUTES WEBHOOKS (Optionnel pour intégrations externes)
 |--------------------------------------------------------------------------
 */
@@ -636,11 +1093,19 @@ Route::prefix('webhooks')->group(function () {
 if (app()->environment(['local', 'testing'])) {
     Route::prefix('dev')->name('dev.')->group(function () {
         
+=======
+| ROUTES DE DÉVELOPPEMENT (local uniquement)
+|--------------------------------------------------------------------------
+*/
+if (app()->environment('local')) {
+    Route::prefix('dev')->name('dev.')->group(function () {
+>>>>>>> 2022c95 (essaie commit)
         Route::get('/clear-all', function () {
             \Artisan::call('cache:clear');
             \Artisan::call('config:clear');
             \Artisan::call('route:clear');
             \Artisan::call('view:clear');
+<<<<<<< HEAD
             \Artisan::call('optimize:clear');
             return response()->json(['message' => 'All caches cleared!']);
         })->name('clear-all');
@@ -655,10 +1120,16 @@ if (app()->environment(['local', 'testing'])) {
             return response()->json(['message' => 'Fake sales generated!']);
         })->name('generate-fake-sales');
         
+=======
+            return response()->json(['message' => 'All caches cleared!']);
+        })->name('clear-all');
+        
+>>>>>>> 2022c95 (essaie commit)
         Route::get('/phpinfo', function () {
             return phpinfo();
         })->name('phpinfo');
         
+<<<<<<< HEAD
         // Route de test pour les redirections par rôle
         Route::get('/test-roles', function () {
             $user = auth()->user();
@@ -674,5 +1145,18 @@ if (app()->environment(['local', 'testing'])) {
             ]);
         })->name('test-roles');
         
+=======
+        Route::get('/test-auth', function () {
+            $user = auth()->user();
+            if ($user) {
+                return response()->json([
+                    'authenticated' => true,
+                    'user' => $user->only(['id', 'name', 'email']),
+                    'redirect_url' => '/dashboard',
+                ]);
+            }
+            return response()->json(['authenticated' => false]);
+        })->middleware('auth')->name('test-auth');
+>>>>>>> 2022c95 (essaie commit)
     });
 }

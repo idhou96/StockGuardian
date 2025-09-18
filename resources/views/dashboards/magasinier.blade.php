@@ -1,0 +1,35 @@
+@extends('layouts.app')
+
+@section('title', 'Dashboard Magasinier')
+
+@section('content')
+<div class="space-y-6">
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-lg p-6 text-white">
+        <h1 class="text-2xl font-bold">Dashboard Magasinier</h1>
+        <p class="text-blue-100 mt-1">Gestion des stocks et inventaires</p>
+    </div>
+
+    @if(isset($dashboardData['cards']))
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            @foreach($dashboardData['cards'] as $card)
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-2xl font-bold text-{{ $card['color'] ?? 'blue' }}-600">{{ $card['value'] }}</div>
+                    <p class="text-gray-600 text-sm">{{ $card['title'] }}</p>
+                </div>
+            @endforeach
+        </div>
+    @endif
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">Actions Stock</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <a href="{{ route('stock-movements.create-entry') }}" class="bg-green-600 text-white p-4 rounded-lg text-center hover:bg-green-700">
+                Entrée Stock
+            </a>
+            <a href="{{ route('inventories.create') }}" class="bg-blue-600 text-white p-4 rounded-lg text-center hover:bg-blue-700">
+                Nouvel Inventaire
+            </a>
+        </div>
+    </div>
+</div>
+@endsection

@@ -1,5 +1,9 @@
 <?php
 // ===============================================
+<<<<<<< HEAD
+=======
+//test breaking change
+>>>>>>> 2022c95 (essaie commit)
 // 🎯 VUE MONITORING PERFORMANCE
 // resources/views/performance/monitor.blade.php
 ?>

@@ -3,6 +3,12 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+<<<<<<< HEAD
+=======
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+>>>>>>> 2022c95 (essaie commit)
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -10,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+<<<<<<< HEAD
     )
     ->withMiddleware(function (Middleware $middleware) {
         
@@ -206,10 +213,40 @@ return Application::configure(basePath: dirname(__DIR__))
         if (app()->environment(['local', 'testing'])) {
             $middleware->append([
                 \App\Http\Middleware\DebugBarMiddleware::class,
+=======
+        then: function () {
+            // DÉFINIR LES RATE LIMITERS DIRECTEMENT ICI
+            RateLimiter::for('api', function (Request $request) {
+                return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            });
+
+            // RATE LIMITER 'LOGIN' - CORRECTION DÉFINITIVE
+            RateLimiter::for('login', function (Request $request) {
+                return Limit::perMinute(5)->by($request->email.$request->ip());
+            });
+
+            RateLimiter::for('global', function (Request $request) {
+                return Limit::perMinute(1000)->by($request->ip());
+            });
+        }
+    )
+    ->withMiddleware(function (Middleware $middleware) {
+        // Configuration minimale des middlewares
+        $middleware->alias([
+            'role' => \App\Http\Middleware\RedirectBasedOnRole::class,
+        ]);
+
+        // Ajouter Spatie Permissions si installé
+        if (class_exists('Spatie\Permission\Middleware\PermissionMiddleware')) {
+            $middleware->alias([
+                'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+                'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+>>>>>>> 2022c95 (essaie commit)
             ]);
         }
     })
     ->withExceptions(function (Exceptions $exceptions) {
+<<<<<<< HEAD
         
         /*
         |--------------------------------------------------------------------------
@@ -334,3 +371,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->create();
+=======
+        // Gestion des exceptions de base
+    })->create();
+>>>>>>> 2022c95 (essaie commit)

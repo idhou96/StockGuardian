@@ -11,12 +11,17 @@ use Illuminate\Support\Facades\Route;
 class RouteServiceProvider extends ServiceProvider
 {
     /**
+<<<<<<< HEAD
      * Path vers la page d'accueil de l'application.
      * Sera utilisé par Laravel pour les redirections après authentification.
+=======
+     * The path to your application's "home" route.
+>>>>>>> 2022c95 (essaie commit)
      */
     public const HOME = '/dashboard';
 
     /**
+<<<<<<< HEAD
      * Configuration des routes de l'application.
      */
     public function boot(): void
@@ -33,6 +38,14 @@ class RouteServiceProvider extends ServiceProvider
                 Limit::perMinute(3)->by($key.$request->input('email')),
             ];
         });
+=======
+     * Define your route model bindings, pattern filters, and other route configuration.
+     */
+    public function boot(): void
+    {
+        // DÉFINITION DE TOUS LES RATE LIMITERS NÉCESSAIRES
+        $this->configureRateLimiting();
+>>>>>>> 2022c95 (essaie commit)
 
         $this->routes(function () {
             Route::middleware('api')
@@ -41,13 +54,17 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
+<<<<<<< HEAD
 
             Route::middleware('web')
                 ->group(base_path('routes/auth.php'));
+=======
+>>>>>>> 2022c95 (essaie commit)
         });
     }
 
     /**
+<<<<<<< HEAD
      * Retourne l'URL de redirection par défaut selon le rôle de l'utilisateur.
      * Utilisé après connexion réussie.
      */
@@ -141,5 +158,129 @@ class RouteServiceProvider extends ServiceProvider
             $user->hasRole('comptable') => 'dashboard.accounting',
             default => 'dashboard.general',
         };
+=======
+     * Configuration des Rate Limiters
+     */
+    protected function configureRateLimiting(): void
+    {
+        // Rate limiter pour l'API
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // CORRECTION: Rate limiter 'login' - OBLIGATOIRE
+        RateLimiter::for('login', function (Request $request) {
+            return Limit::perMinute(5)->by($request->email.$request->ip());
+        });
+
+        // Rate limiter pour les actions administratives
+        RateLimiter::for('admin', function (Request $request) {
+            return Limit::perMinute(100)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // Rate limiter pour les actions sensibles
+        RateLimiter::for('sensitive', function (Request $request) {
+            return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // Rate limiter pour les requêtes globales
+        RateLimiter::for('global', function (Request $request) {
+            return Limit::perMinute(1000)->by($request->ip());
+        });
+    }
+
+    /**
+     * Redirection après authentification selon le rôle
+     */
+    public static function redirectTo($user = null): string
+    {
+        // Si aucun utilisateur fourni, utiliser l'utilisateur connecté
+        if (!$user) {
+            $user = auth()->user();
+        }
+
+        // Si pas d'utilisateur connecté, retour dashboard par défaut
+        if (!$user) {
+            return '/dashboard';
+        }
+
+        // Si l'utilisateur a des rôles Spatie
+        if (method_exists($user, 'getRoleNames') && $user->getRoleNames()->count() > 0) {
+            $role = $user->getRoleNames()->first();
+            
+            return match ($role) {
+                'Administrateur' => '/dashboard/admin',
+                'administrateur' => '/dashboard/admin',
+                'Responsable Commercial' => '/dashboard/commercial',
+                'responsable_commercial' => '/dashboard/commercial',
+                'Vendeur' => '/dashboard/vendeur',
+                'vendeur' => '/dashboard/vendeur',
+                'Magasinier' => '/dashboard/magasinier',
+                'magasinier' => '/dashboard/magasinier',
+                'Responsable Achats' => '/dashboard/achats',
+                'responsable_achats' => '/dashboard/achats',
+                'Comptable' => '/dashboard/comptable',
+                'comptable' => '/dashboard/comptable',
+                'Caissière' => '/pos', // Accès direct au point de vente
+                'caissiere' => '/pos',
+                'Invité/Stagiaire' => '/dashboard/invite',
+                'invite' => '/dashboard/invite',
+                'stagiaire' => '/dashboard/invite',
+                default => '/dashboard'
+            };
+        }
+
+        // Si l'utilisateur a un champ 'role' simple
+        if (isset($user->role)) {
+            return match (strtolower($user->role)) {
+                'administrateur', 'admin' => '/dashboard/admin',
+                'responsable_commercial', 'manager' => '/dashboard/commercial',
+                'vendeur', 'sales' => '/dashboard/vendeur',
+                'magasinier', 'warehouse' => '/dashboard/magasinier',
+                'responsable_achats', 'purchases' => '/dashboard/achats',
+                'comptable', 'accounting' => '/dashboard/comptable',
+                'caissiere', 'cashier' => '/pos',
+                'invite', 'stagiaire', 'guest' => '/dashboard/invite',
+                default => '/dashboard'
+            };
+        }
+
+        // Dashboard par défaut
+        return '/dashboard';
+    }
+
+    /**
+     * Obtenir le nom du rôle de l'utilisateur
+     */
+    public static function getUserRole($user = null): ?string
+    {
+        if (!$user) {
+            $user = auth()->user();
+        }
+
+        if (!$user) {
+            return null;
+        }
+
+        // Si Spatie Permissions est disponible
+        if (method_exists($user, 'getRoleNames')) {
+            return $user->getRoleNames()->first();
+        }
+
+        // Si l'utilisateur a un champ 'role' simple
+        return $user->role ?? null;
+    }
+
+    /**
+     * Vérifier si l'utilisateur a un rôle spécifique
+     */
+    public static function userHasRole($user, $role): bool
+    {
+        if (method_exists($user, 'hasRole')) {
+            return $user->hasRole($role);
+        }
+
+        return strtolower($user->role ?? '') === strtolower($role);
+>>>>>>> 2022c95 (essaie commit)
     }
 }
