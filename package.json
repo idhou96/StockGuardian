@@ -7,18 +7,15 @@
         "dev": "vite"
     },
     "devDependencies": {
-<<<<<<< HEAD
+
         "@commitlint/cli": "^19.8.1",
         "@commitlint/config-conventional": "^19.8.1",
-=======
->>>>>>> 2022c95 (essaie commit)
         "@semantic-release/changelog": "^6.0.3",
         "@semantic-release/commit-analyzer": "^13.0.1",
         "@semantic-release/exec": "^7.1.0",
         "@semantic-release/git": "^10.0.1",
         "@semantic-release/github": "^11.0.6",
         "@semantic-release/release-notes-generator": "^14.1.0",
-<<<<<<< HEAD
         "@tailwindcss/forms": "^0.5.2",
         "@tailwindcss/typography": "^0.5.16",
         "@tailwindcss/vite": "^4.0.0",
@@ -30,18 +27,7 @@
         "postcss": "^8.4.31",
         "semantic-release": "^24.2.8",
         "tailwindcss": "^3.1.0",
-=======
-        "@tailwindcss/forms": "^0.5.10",
-        "@tailwindcss/typography": "^0.5.16",
-        "@tailwindcss/vite": "^4.0.0",
-        "autoprefixer": "^10.4.21",
-        "axios": "^1.11.0",
-        "concurrently": "^9.0.1",
-        "laravel-vite-plugin": "^2.0.0",
-        "postcss": "^8.5.6",
-        "semantic-release": "^24.2.8",
-        "tailwindcss": "^4.1.13",
->>>>>>> 2022c95 (essaie commit)
+
         "vite": "^7.0.4"
     }
 }
