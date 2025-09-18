@@ -1,6 +1,5 @@
 <?php
 //test 1
-//test 2
 <<<<<<< HEAD
 // test breaking change
 use Illuminate\Support\Facades\Route;
