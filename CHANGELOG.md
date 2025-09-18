@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/idhou96/StockGuardian/compare/v1.0.0...v1.0.1) (2025-09-18)
+
+
+### Bug Fixes
+
+* test 1 correction du middleware Sanctum ([f862440](https://github.com/idhou96/StockGuardian/commit/f862440c6be5f9b45f501a8d8779b9246d4855fe))
+
 # 1.0.0 (2025-09-18)
 
 
